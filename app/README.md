@@ -24,11 +24,11 @@ Interop (Kotlin client against the real Rust daemon with a fake host): build the
   -Pandroid.testInstrumentationRunnerArguments.pairing="$(head -1 /tmp/fake.out | base64 | tr -d '\n')"
 ```
 
-Release builds are R8-minified; `-PminifyDebug=true` runs the instrumented tests against shrunk code (see `../docs/android-release.md`).
+Release builds are R8-minified; `-PminifyDebug=true` runs the instrumented tests against shrunk code (see `../site/content/docs/android-release.md`).
 
 Gradle dependency verification is on (`gradle/verification-metadata.xml`, sha256). After changing dependencies:
 `./gradlew --write-verification-metadata sha256 <the tasks you use>`, then review the diff.
 
-Release APK: signed in CI from a `v*` tag (`../docs/android-release.md`); locally set `SERVERHANDS_KEYSTORE*` and run `:androidApp:assembleRelease -PversionName=X.Y.Z -PversionCode=N`.
+Release APK: signed in CI from a `v*` tag (`../site/content/docs/android-release.md`); locally set `SERVERHANDS_KEYSTORE*` and run `:androidApp:assembleRelease -PversionName=X.Y.Z -PversionCode=N`.
 
 Debug builds allow software-backed keys (emulators); release builds refuse them (`BuildConfig.ALLOW_SOFTWARE_KEYS`).

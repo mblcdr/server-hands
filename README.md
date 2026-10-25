@@ -21,7 +21,7 @@ handsd       ── unlocks via libcryptsetup, mounts through fstab, restarts th
                 runs `auto` scripts; `manual` scripts appear in the app and can be run from it at any time
 ```
 
-Security properties in short: pinned TLS plus a pinned Ed25519 server identity (no CA, no trust on first use after pairing), per-request ephemeral keys held in RAM only, single-use nonces, per-use biometric on the phone, a dedicated revocable LUKS keyslot for the phone, no secrets in logs or argv. See [docs/threat-model.md](docs/threat-model.md) and [docs/protocol.md](docs/protocol.md).
+Security properties in short: pinned TLS plus a pinned Ed25519 server identity (no CA, no trust on first use after pairing), per-request ephemeral keys held in RAM only, single-use nonces, per-use biometric on the phone, a dedicated revocable LUKS keyslot for the phone, no secrets in logs or argv. See [docs/threat-model.md](https://mblcdr.github.io/server-hands/docs/threat-model/) and [docs/protocol.md](https://mblcdr.github.io/server-hands/docs/protocol/).
 
 ## Repository layout
 
@@ -30,14 +30,13 @@ Security properties in short: pinned TLS plus a pinned Ed25519 server identity (
 | `server/` | Rust workspace: `handsd` (daemon), `handsctl` (pairing, discovery, keyslots, revoke), `hands-proto` (wire types and crypto), `hands-client` (test client). Packaging (systemd units, config template, `.deb` scripts) in `server/packaging/`. |
 | `app/` | Kotlin Multiplatform Gradle build: `core:crypto`, `core:protocol`, `androidApp` (Compose UI, Keystore, QR pairing, minSdk 31). macOS client planned. |
 | `protocol/vectors/` | Test vectors that both the Rust and Kotlin implementations must pass. |
-| `docs/` | Setup guide, protocol, threat model, apt repository, Android release and signing, test notes. |
-| `docs/site/` | The GitHub Pages landing page. |
+| `site/` | The Hugo + Doks site published on GitHub Pages: landing page and all documentation (setup guide, protocol, threat model, apt repository, Android release and signing) under `site/content/docs/`. |
 | `.github/workflows/` | `deb.yml` (tests, `.deb`, signed apt repo, Pages) and `app.yml` (tests, signed APK). |
 | `PLAN.md` | Decisions, architecture and phase status. |
 
 ## Install the server
 
-Debian 13 / OpenMediaVault 8, amd64, from the signed apt repository (details and key check in [docs/apt-repo.md](docs/apt-repo.md)):
+Debian 13 / OpenMediaVault 8, amd64, from the signed apt repository (details and key check in [docs/apt-repo.md](https://mblcdr.github.io/server-hands/docs/apt-repo/)):
 
 ```sh
 sudo install -d -m 0755 /etc/apt/keyrings
@@ -50,11 +49,11 @@ Or download the `.deb` from a release and run `sudo apt install ./server-hands_X
 
 ## Install the app
 
-Download `server-hands_X.Y.Z.apk` from the [GitHub Release](https://github.com/mblcdr/Server-Hands/releases) of the same version (check it against `SHA256SUMS`) and install it on the phone (Android 12+, minSdk 31). It is signed with the project's release key; see [docs/android-release.md](docs/android-release.md) for the signing setup and how to build it yourself. A phone with a strong biometric is required.
+Download `server-hands_X.Y.Z.apk` from the [GitHub Release](https://github.com/mblcdr/Server-Hands/releases) of the same version (check it against `SHA256SUMS`) and install it on the phone (Android 12+, minSdk 31). It is signed with the project's release key; see [docs/android-release.md](https://mblcdr.github.io/server-hands/docs/android-release/) for the signing setup and how to build it yourself. A phone with a strong biometric is required.
 
 ## Set it up
 
-The full walkthrough is [docs/homelab-setup.md](docs/homelab-setup.md). The short version:
+The full walkthrough is [docs/homelab-setup.md](https://mblcdr.github.io/server-hands/docs/homelab-setup/). The short version:
 
 1. `sudo handsctl discover --write` finds your LUKS drives and writes `/etc/server-hands/config.toml`.
 2. `sudo handsctl add-phone-key <luks-uuid>` adds a phone-only keyslot per drive.
@@ -99,7 +98,7 @@ cd app
 
 ## Releasing
 
-Pushing a tag `vX.Y.Z` builds the `.deb`, signs the apt repository and publishes it with the landing page to GitHub Pages ([docs/apt-repo.md](docs/apt-repo.md)). The same tag builds the signed Android APK and attaches it to the GitHub Release ([docs/android-release.md](docs/android-release.md), including the one-time signing key and secrets setup). The tag becomes the package version, so keep it in step with the workspace version in `server/Cargo.toml`.
+Pushing a tag `vX.Y.Z` builds the `.deb`, signs the apt repository and publishes it with the landing page to GitHub Pages ([docs/apt-repo.md](https://mblcdr.github.io/server-hands/docs/apt-repo/)). The same tag builds the signed Android APK and attaches it to the GitHub Release ([docs/android-release.md](https://mblcdr.github.io/server-hands/docs/android-release/), including the one-time signing key and secrets setup). The tag becomes the package version, so keep it in step with the workspace version in `server/Cargo.toml`.
 
 ## Recovery
 

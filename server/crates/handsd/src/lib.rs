@@ -1,4 +1,4 @@
-//! handsd library. `state` is the pure protocol state machine; the rest is wiring (see docs/protocol.md).
+//! handsd library. `state` is the pure protocol state machine; the rest is wiring (see site/content/docs/protocol.md).
 pub mod config;
 pub mod daemon;
 pub mod host;

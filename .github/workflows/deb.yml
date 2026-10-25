@@ -2,15 +2,15 @@ name: deb
 
 # Every push/PR: test and build the .deb, upload it as an artifact.
 # Tags `v*` (and a manual run with "publish" ticked): also publish it to the signed apt repository on GitHub Pages
-# (see docs/apt-repo.md for the one-time setup).
+# (see site/content/docs/apt-repo.md for the one-time setup).
 # Tags `v*`: also attach the .deb (named handsd_<version>_<arch>.deb by cargo-deb) and its checksum to the GitHub Release.
 on:
   push:
     branches: [main]
     tags: ["v*"]
-    paths: ["server/**", "docs/homelab-setup.md", "docs/site/**", ".github/workflows/deb.yml"]
+    paths: ["server/**", "site/**", ".github/workflows/deb.yml"]
   pull_request:
-    paths: ["server/**", "docs/homelab-setup.md", "docs/site/**", ".github/workflows/deb.yml"]
+    paths: ["server/**", "site/**", ".github/workflows/deb.yml"]
   workflow_dispatch:
     inputs:
       publish:
@@ -91,7 +91,7 @@ jobs:
             server/target/debian/SHA256SUMS
           if-no-files-found: error
 
-      # The test client used in docs/phase2-box-test.md. Not part of the package.
+      # The test client for manual protocol tests. Not part of the package.
       - uses: actions/upload-artifact@v7
         with:
           name: hands-client-linux-amd64
@@ -139,14 +139,14 @@ jobs:
       - name: Check signing key is configured
         run: |
           if [ -z "$APT_GPG_PRIVATE_KEY" ]; then
-            echo "::error::Secret APT_GPG_PRIVATE_KEY is not set. See docs/apt-repo.md."
+            echo "::error::Secret APT_GPG_PRIVATE_KEY is not set. See site/content/docs/apt-repo.md."
             exit 1
           fi
 
       - name: System packages
         run: |
           apt-get update -qq
-          apt-get install -y -qq --no-install-recommends apt-utils gnupg git ca-certificates gzip
+          apt-get install -y -qq --no-install-recommends apt-utils gnupg git ca-certificates gzip curl nodejs npm
 
       - uses: actions/checkout@v7
         with:
@@ -202,8 +202,25 @@ jobs:
 
           owner="${GITHUB_REPOSITORY%%/*}"
           base="https://$(echo "$owner" | tr 'A-Z' 'a-z').github.io/${GITHUB_REPOSITORY#*/}"
-          sed -e "s|__BASE__|$base|g" -e "s|__FPR__|$fpr|g" -e "s|__VERSION__|${{ needs.build.outputs.version }}|g" \
-            ../src/docs/site/index.html > index.html
+          echo "base=$base" >> "$GITHUB_ENV"
+          echo "fpr=$fpr" >> "$GITHUB_ENV"
+
+      # The Hugo + Doks site is written on top of the apt repository files in the same gh-pages tree.
+      - name: Build the documentation site
+        shell: bash
+        env:
+          HUGO_VERSION: "0.168.0"
+          DART_SASS_VERSION: "1.104.1"
+        run: |
+          curl -fsSL -o hugo.deb "https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb"
+          apt-get install -y -qq ./hugo.deb
+          curl -fsSL "https://github.com/sass/dart-sass/releases/download/${DART_SASS_VERSION}/dart-sass-${DART_SASS_VERSION}-linux-x64.tar.gz" | tar -xz -C /opt
+          export PATH="/opt/dart-sass:$PATH"
+          cd src/site
+          npm ci --no-audit --no-fund
+          HUGO_PARAMS_APTVERSION="${{ needs.build.outputs.version }}" \
+          HUGO_PARAMS_APTFINGERPRINT="$fpr" \
+            hugo build --gc --minify --baseURL "$base/" --destination "$GITHUB_WORKSPACE/site"
 
       - name: Publish
         working-directory: site

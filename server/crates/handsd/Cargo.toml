@@ -53,7 +53,7 @@ assets = [
   ["../../packaging/systemd/hands-unlocked.target", "lib/systemd/system/", "644"],
   ["../../packaging/config/config.toml", "etc/server-hands/config.toml", "640"],
   ["../../packaging/systemd-conf/10-server-hands.conf", "usr/share/server-hands/", "644"],
-  ["../../../docs/homelab-setup.md", "usr/share/doc/server-hands/README.md", "644"],
+  ["../../../site/content/docs/homelab-setup.md", "usr/share/doc/server-hands/README.md", "644"],
   ["../../packaging/dropins/gated-service.conf", "usr/share/server-hands/gated-service.conf", "644"],
   ["../../packaging/examples/post-unlock-example.sh", "usr/share/server-hands/post-unlock-example.sh", "755"],
 ]

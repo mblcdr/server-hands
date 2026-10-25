@@ -1,4 +1,4 @@
-//! Wire types and secret handling for the Server Hands protocol (see docs/protocol.md).
+//! Wire types and secret handling for the Server Hands protocol (see site/content/docs/protocol.md).
 //! Crypto (HPKE, Ed25519, P-256) is added in Phase 1 against the shared test vectors.
 
 pub mod codec;

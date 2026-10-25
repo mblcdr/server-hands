@@ -1,4 +1,10 @@
-# Installing from the apt repository
+---
+title: "Apt repository"
+description: "Install and upgrade the server package from the signed apt repository."
+slug: "apt-repo"
+weight: 20
+toc: true
+---
 
 The GitHub Actions workflow (`.github/workflows/deb.yml`) builds the package in a Debian 13 container on every push and pull request and uploads it as a workflow artifact (`server-hands-deb`, plus `SHA256SUMS`; `hands-client-linux-amd64` is the test client). Pushing a tag `v*` (for example `v0.5.0`) additionally publishes the package to a signed apt repository served from GitHub Pages, so the server can install and upgrade it with plain `apt`.
 
@@ -11,7 +17,7 @@ echo "deb [signed-by=/etc/apt/keyrings/server-hands.gpg] https://mblcdr.github.i
 sudo apt update && sudo apt install server-hands
 ```
 
-Later updates are `sudo apt update && sudo apt upgrade`. The package never enables the service by itself (see `homelab-setup.md`), and upgrades keep `/etc/server-hands/config.toml` (it is a conffile).
+Later updates are `sudo apt update && sudo apt upgrade`. The package never enables the service by itself (see [the setup guide](../homelab-setup/)), and upgrades keep `/etc/server-hands/config.toml` (it is a conffile).
 
 Before trusting the key, compare its fingerprint with the one you recorded when you generated it:
 `gpg --show-keys --with-fingerprint /etc/apt/keyrings/server-hands.gpg`. The key is fetched over HTTPS from the same host as the packages, so the fingerprint check is what protects the first install.

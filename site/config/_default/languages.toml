@@ -1,0 +1,8 @@
+[en]
+  label = "English"
+  contentDir = "content"
+  weight = 10
+  [en.params]
+    languageISO = "EN"
+    languageTag = "en-US"
+    footer = 'Server Hands · MIT licensed · <a class="text-muted" href="https://github.com/mblcdr/server-hands">Source</a>'

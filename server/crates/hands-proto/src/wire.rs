@@ -1,4 +1,4 @@
-//! JSON wire bodies for the HTTP API (see docs/protocol.md). Binary fields are base64url without padding.
+//! JSON wire bodies for the HTTP API (see site/content/docs/protocol.md). Binary fields are base64url without padding.
 //! Every body rejects unknown fields.
 
 use serde::{Deserialize, Serialize};

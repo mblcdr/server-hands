@@ -1,4 +1,10 @@
-# Threat model (draft)
+---
+title: "Threat model"
+description: "What Server Hands protects, and against whom."
+slug: "threat-model"
+weight: 50
+toc: true
+---
 
 Assets: LUKS passphrases (phone vault, in flight, server RAM during unlock); server identity key; paired-device list.
 

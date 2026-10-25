@@ -1,4 +1,10 @@
-# Protocol v1 (draft)
+---
+title: "Protocol v1"
+description: "Wire format, encodings and cryptography used between the app and the server."
+slug: "protocol"
+weight: 40
+toc: true
+---
 
 Single version, no negotiation, no fallback. Anything else is rejected.
 

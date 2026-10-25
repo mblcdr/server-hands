@@ -59,9 +59,9 @@ Residual risk (accepted): root on the live server can read the passphrase during
 
 1. BIOS: restore power on AC loss, Wake-on-LAN; DHCP reservation for the server.
 2. Install: `sudo apt install ./server-hands_X.Y.Z_amd64.deb`, then `sudo handsctl discover` (writes `/etc/server-hands/config.toml`), `sudo handsctl pair`.
-3. Add phone keyslot to each drive (documented in `docs/homelab-setup.md`).
+3. Add phone keyslot to each drive (documented in `site/content/docs/homelab-setup.md`).
 4. **Post-unlock scripts instead of gating.** Docker and other services are not gated. `[[script]]` entries in the config run as root (transient unit) after the pool is refreshed: `auto` ones right after the unlock, `manual` ones from the app's "Scripts" card, at any time (a script can opt out of the unlocked-drives requirement with `requires_unlock = false`). The phone can only name a configured script. The pool mount is restarted like the OMV mergerfs plugin's "restart pool" (`systemctl restart <mount unit>`).
-5. `DefaultDeviceTimeoutSec=10s` drop-in for the ~90 s boot delay (documented in `docs/homelab-setup.md`).
+5. `DefaultDeviceTimeoutSec=10s` drop-in for the ~90 s boot delay (documented in `site/content/docs/homelab-setup.md`).
 6. Firewall: allow only the handsd port from the LAN.
 7. Reboot test, and a documented recovery procedure (lost phone: unlock via OMV GUI with the human passphrase, `handsctl revoke`, `luksKillSlot`).
 
@@ -71,8 +71,7 @@ Residual risk (accepted): root on the live server can read the passphrase during
 PLAN.md
 README.md, LICENSE (MIT)
 .github/workflows/  deb.yml (server package + apt repo + Pages), app.yml (tests + signed APK)
-docs/        phase0-findings.md, protocol.md, threat-model.md, homelab-setup.md, apt-repo.md, android-release.md, phase2-box-test.md, phase3-device-test.md
-docs/site/   GitHub Pages landing page template
+site/        Hugo + Doks site (GitHub Pages): landing page and docs in site/content/docs/ (protocol, threat-model, homelab-setup, apt-repo, android-release)
 spike/       omv-probe.sh
 server/      Cargo workspace: hands-proto (messages + crypto), handsd, handsctl, hands-client (test client)
   packaging/ systemd units, drop-ins, config template, example post-unlock script, debian maintainer scripts, build-deb.sh, check-security.sh
@@ -84,7 +83,7 @@ app/         Gradle KMP: core:crypto, core:protocol, core:data, feature:*, andro
 | # | Phase | Exit criteria |
 |---|---|---|
 | 0 | Spike (done: source review + probe) | findings doc; remaining: confirm boot delay cause; live-box proof that libcryptsetup activate -> systemd mount shows "unlocked" in OMV GUI |
-| 1 | Protocol (**done**) | `docs/protocol.md` normative encodings; `protocol/vectors/v1.json` (+ `v1-kotlin.json`) pass in Rust and Kotlin, both seal directions; 20 negative vectors; server request state machine with 14 tests (replay, expiry, rogue server key, lockout, revoked device) |
+| 1 | Protocol (**done**) | `site/content/docs/protocol.md` normative encodings; `protocol/vectors/v1.json` (+ `v1-kotlin.json`) pass in Rust and Kotlin, both seal directions; 20 negative vectors; server request state machine with 14 tests (replay, expiry, rogue server key, lockout, revoked device) |
 | 2 | Server MVP (**done**) | `handsd`/`handsctl`/`hands-client`; real unlock of a LUKS container from the test client verified on the box; `systemd-analyze security` 1.9 (target <= 3.0); `.deb` built with `build-deb.sh` |
 | 3 | Android MVP (**done**) | pairing, vault, biometric flow, requests list, approve; verified on a real phone: pair, save passphrase, biometric unlock of a test container; interop and Keystore signing also covered by automated tests. Not yet run on a phone: the instrumented Keystore property tests (`connectedDebugAndroidTest`) and a StrongBox check |
 | 4 | Full homelab flow (**done**) | verified on the real server: 3 drives, mergerfs pool refresh, post-unlock scripts (auto and from the app), `DefaultDeviceTimeoutSec=10s` (boot ~14 s, first device timeouts at ~12.8 s), reboot test, recovery docs. Gating of Docker and services was dropped in favour of scripts |

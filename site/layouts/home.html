@@ -1,0 +1,70 @@
+{{ define "main" }}
+<section class="section container-fluid mt-n3 pb-3">
+  <div class="row justify-content-center">
+    <div class="col-lg-12 text-center">
+      <h1>{{ .Title }}</h1>
+    </div>
+    <div class="col-lg-9 col-xl-8 text-center">
+      <p class="lead">{{ .Params.lead | safeHTML }}</p>
+      <a class="btn btn-primary btn-cta rounded-pill btn-lg my-3" href="#install" role="button">Install</a>
+      <a class="btn btn-outline-primary rounded-pill btn-lg my-3" href="{{ "docs/homelab-setup/" | relURL }}" role="button">Read the docs</a>
+    </div>
+  </div>
+</section>
+{{ end }}
+
+{{ define "sidebar-prefooter" }}
+  {{ if site.Params.doks.backgroundDots -}}
+  <div class="d-flex justify-content-start">
+    <div class="bg-dots"></div>
+  </div>
+  {{ end -}}
+  <section class="section section-md" id="how">
+    <div class="container">
+      <h2 class="text-center mb-4">How it works</h2>
+      <div class="row justify-content-center text-center">
+        <div class="col-lg-3"><h3 class="h5">1. Boot</h3><p>The server starts with its LUKS drives locked and publishes an unlock request.</p></div>
+        <div class="col-lg-3"><h3 class="h5">2. Open the app</h3><p>It verifies the server's pinned identity and shows which drives are waiting.</p></div>
+        <div class="col-lg-3"><h3 class="h5">3. Fingerprint</h3><p>A biometric releases the passphrases, sealed to a one-time key held only in server memory.</p></div>
+        <div class="col-lg-3"><h3 class="h5">4. Back to normal</h3><p>Drives unlock and mount, the mergerfs pool refreshes and your scripts start the containers.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-md section-features">
+    <div class="container">
+      <div class="row justify-content-center text-center">
+        <div class="col-lg-4"><h2 class="h4">End-to-end encrypted</h2><p>HPKE to a per-request ephemeral key on top of pinned TLS 1.3. Recorded traffic or a stolen disk reveals nothing.</p></div>
+        <div class="col-lg-4"><h2 class="h4">Biometric vault</h2><p>Passphrases sit in an Android Keystore vault that needs a fresh strong biometric for every use.</p></div>
+        <div class="col-lg-4"><h2 class="h4">No impersonation</h2><p>Pairing is done once over a QR from your SSH console. A changed server key is a hard failure.</p></div>
+        <div class="col-lg-4"><h2 class="h4">Post-unlock scripts</h2><p>Run scripts automatically after unlock, or start them from the app.</p></div>
+        <div class="col-lg-4"><h2 class="h4">OpenMediaVault aware</h2><p>Mounts through your existing fstab entries and refreshes the mergerfs pool.</p></div>
+        <div class="col-lg-4"><h2 class="h4">Tiny and sandboxed</h2><p>A small native systemd service. Revoke a lost phone with one command.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-md" id="install">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          {{ $base := site.BaseURL | strings.TrimSuffix "/" }}
+          <h2>Install on the server</h2>
+          <p>Signed apt repository for Debian 13 / OpenMediaVault 8, amd64.{{ with site.Params.aptVersion }} Current version: <b>{{ . }}</b>.{{ end }}</p>
+          <pre><code>sudo install -d -m 0755 /etc/apt/keyrings
+curl -fsSL {{ $base }}/server-hands.gpg | sudo tee /etc/apt/keyrings/server-hands.gpg &gt;/dev/null
+echo "deb [signed-by=/etc/apt/keyrings/server-hands.gpg] {{ $base }}/ ./" | sudo tee /etc/apt/sources.list.d/server-hands.list
+sudo apt update &amp;&amp; sudo apt install server-hands</code></pre>
+          <p>The service is not enabled automatically. Continue with <a href="{{ "docs/homelab-setup/" | relURL }}">the setup guide</a>.</p>
+          {{ with site.Params.aptFingerprint }}
+          <p>Verify the signing key before trusting it. Its fingerprint is <code>{{ . }}</code>:</p>
+          <pre><code>gpg --show-keys --with-fingerprint /etc/apt/keyrings/server-hands.gpg</code></pre>
+          {{ end }}
+          <p>The Android app (APK) is on the <a href="https://github.com/mblcdr/server-hands/releases">GitHub Releases</a> page.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+{{ end }}
+
+{{ define "sidebar-footer" }}{{ end }}

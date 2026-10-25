@@ -1,4 +1,10 @@
-# Signing and releasing the Android app
+---
+title: "Android app release"
+description: "Build, sign and release the Android app."
+slug: "android-release"
+weight: 30
+toc: true
+---
 
 The `app` workflow (`.github/workflows/app.yml`) tests the app and builds an APK on every push and pull request. On a tag `vX.Y.Z` it builds a **signed release APK** and attaches it, with `SHA256SUMS`, to the GitHub Release of that tag (created if missing). The same tag also drives the server package (`deb` workflow), so one tag releases both. The tag sets `versionName` (`v0.5.0` gives `0.5.0`) and `versionCode` (`major*10000 + minor*100 + patch`, e.g. 500).
 
@@ -65,7 +71,7 @@ cd app
 ./gradlew :androidApp:connectedDebugAndroidTest -PminifyDebug=true \
   -Pandroid.testInstrumentationRunnerArguments.pairing="$(head -1 /tmp/fake.out | base64 | tr -d '\n')"
 ```
-(start the fake server as in `app/README.md`; its pairing token is single-use, so restart it for every run). `proguard-verify.pro` only applies to this mode: it keeps the Kotlin stdlib, kotlinx JSON and the crypto package that the test APK borrows from the app.
+(start the fake server as in [`app/README.md`](https://github.com/mblcdr/server-hands/blob/main/app/README.md); its pairing token is single-use, so restart it for every run). `proguard-verify.pro` only applies to this mode: it keeps the Kotlin stdlib, kotlinx JSON and the crypto package that the test APK borrows from the app.
 
 Not covered by those tests: the Compose screens, the QR scanner and the real biometric prompt. Check those on a phone with the signed release APK.
 

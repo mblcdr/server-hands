@@ -1,7 +1,7 @@
 name: app
 
 # Every push/PR: run the Kotlin tests and build an APK.
-# With the signing secrets present (see docs/android-release.md) the APK is a signed release build;
+# With the signing secrets present (see site/content/docs/android-release.md) the APK is a signed release build;
 # otherwise (forks, PRs without secrets) it is an unsigned-key debug build.
 # Tags `v*`: also attach the signed APK and its checksum to the GitHub Release for that tag.
 on:
@@ -60,7 +60,7 @@ jobs:
       - name: Require the signing key on tags
         if: startsWith(github.ref, 'refs/tags/v') && env.KEYSTORE_B64 == ''
         run: |
-          echo "::error::Secret ANDROID_KEYSTORE_BASE64 is not set. See docs/android-release.md."
+          echo "::error::Secret ANDROID_KEYSTORE_BASE64 is not set. See site/content/docs/android-release.md."
           exit 1
 
       - name: Decode signing key

@@ -1,7 +1,13 @@
-# Homelab setup (draft, finalised in Phase 4)
+---
+title: "Homelab setup"
+description: "Set up the server, pair your phone and add post-unlock scripts."
+slug: "homelab-setup"
+weight: 10
+toc: true
+---
 
 1. BIOS: Restore on AC power loss = Power On; enable Wake-on-LAN. DHCP reservation for the server.
-2. Install the package, either from the apt repository (preferred, gives upgrades: see `apt-repo.md`) or from a downloaded file: `sudo apt install ./server-hands_X.Y.Z_amd64.deb`
+2. Install the package, either from the apt repository (preferred, gives upgrades: see [the apt repository page](../apt-repo/)) or from a downloaded file: `sudo apt install ./server-hands_X.Y.Z_amd64.deb`
 3. `sudo handsctl discover --write`, then review labels and the `[post_unlock]` lists in `/etc/server-hands/config.toml`. Drives with an `/etc/crypttab` entry are skipped and reported.
 4. Add a phone-only keyslot per drive (you will be prompted for the existing passphrase; the new one is generated and shown once for entry into the app):
    `sudo handsctl add-phone-key <luks-uuid>` (libcryptsetup directly; the existing passphrase is read from the tty, nothing goes through argv)
