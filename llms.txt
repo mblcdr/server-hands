@@ -1,0 +1,16 @@
+# Server Hands
+
+> Phone-approved LUKS unlock for OpenMediaVault. Open the app, use your fingerprint, and your encrypted drives unlock end to end encrypted.
+
+- [Docs](https://mblcdr.github.io/server-hands/docs/): Setup, packaging, protocol and security documentation for Server Hands.
+
+## Docs
+
+> Setup, packaging, protocol and security documentation for Server Hands.
+
+- [Homelab setup](https://mblcdr.github.io/server-hands/docs/homelab-setup/): Set up the server, pair your phone and add post-unlock scripts.
+- [Apt repository](https://mblcdr.github.io/server-hands/docs/apt-repo/): Install and upgrade the server package from the signed apt repository.
+- [Android app release](https://mblcdr.github.io/server-hands/docs/android-release/): Build, sign and release the Android app.
+- [Protocol v1](https://mblcdr.github.io/server-hands/docs/protocol/): Wire format, encodings and cryptography used between the app and the server.
+- [Threat model](https://mblcdr.github.io/server-hands/docs/threat-model/): What Server Hands protects, and against whom.
+

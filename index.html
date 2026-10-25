@@ -1,135 +1,17 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Server Hands: unlock your homelab from your phone</title>
-<meta name="description" content="Phone-approved LUKS unlock for OpenMediaVault. Open the app, use your fingerprint, and your encrypted drives unlock end to end encrypted.">
-<meta name="color-scheme" content="dark light">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236d5efc'/%3E%3Cpath d='M11 14v-2a5 5 0 0 1 10 0v2' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Crect x='8' y='14' width='16' height='11' rx='3' fill='white'/%3E%3C/svg%3E">
-<style>
-:root {
-  --bg: #0b0d14; --bg2: #121624; --card: #161b2c; --line: #263050;
-  --text: #e8ebf5; --muted: #98a2c3; --accent: #7c6cff; --accent2: #35d0ba;
-  --code: #0a0c13; --glow: rgba(124,108,255,.28);
-}
-@media (prefers-color-scheme: light) {
-  :root { --bg: #f6f7fc; --bg2: #ffffff; --card: #ffffff; --line: #dfe3f2; --text: #151a2e; --muted: #5a6385; --accent: #5b4af0; --accent2: #0ea58f; --code: #12172a; --glow: rgba(91,74,240,.18); }
-}
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { margin: 0; font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--text); background: var(--bg); -webkit-font-smoothing: antialiased; }
-a { color: var(--accent); }
-.wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
-nav { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -.01em; color: var(--text); text-decoration: none; }
-.logo { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: grid; place-items: center; }
-.logo svg { width: 18px; height: 18px; }
-nav .links { display: flex; gap: 22px; font-size: 15px; }
-nav .links a { color: var(--muted); text-decoration: none; }
-nav .links a:hover { color: var(--text); }
-.hero { position: relative; text-align: center; padding: 72px 0 80px; overflow: hidden; }
-.hero::before { content: ""; position: absolute; inset: -40% -10% auto; height: 520px; background: radial-gradient(closest-side, var(--glow), transparent); pointer-events: none; }
-.pill { display: inline-block; font-size: 13px; padding: 5px 12px; border: 1px solid var(--line); border-radius: 99px; color: var(--muted); background: var(--bg2); }
-h1 { font-size: clamp(2.2rem, 6vw, 4rem); line-height: 1.08; letter-spacing: -.03em; margin: 22px auto 18px; max-width: 16ch; }
-h1 em { font-style: normal; background: linear-gradient(90deg, var(--accent), var(--accent2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-.lead { font-size: 1.15rem; color: var(--muted); max-width: 58ch; margin: 0 auto 30px; }
-.cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-.btn { display: inline-block; padding: 12px 22px; border-radius: 12px; font-weight: 600; text-decoration: none; border: 1px solid var(--line); color: var(--text); background: var(--bg2); }
-.btn.primary { background: linear-gradient(135deg, var(--accent), #5a49e8); color: #fff; border-color: transparent; box-shadow: 0 8px 28px var(--glow); }
-.btn:hover { transform: translateY(-1px); }
-section { padding: 56px 0; }
-h2 { font-size: clamp(1.6rem, 3.5vw, 2.2rem); letter-spacing: -.02em; margin: 0 0 8px; }
-.sub { color: var(--muted); margin: 0 0 32px; max-width: 62ch; }
-.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
-.card .ic { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 25%, transparent), color-mix(in srgb, var(--accent2) 25%, transparent)); font-size: 20px; margin-bottom: 12px; }
-.card h3 { margin: 0 0 6px; font-size: 1.05rem; }
-.card p { margin: 0; color: var(--muted); font-size: .95rem; }
-.flow { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); counter-reset: s; }
-.flow .step { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 20px 20px 20px 20px; }
-.flow .step::before { counter-increment: s; content: counter(s); display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; font-size: 14px; margin-bottom: 10px; }
-.flow b { display: block; margin-bottom: 4px; }
-.flow span { color: var(--muted); font-size: .92rem; }
-.install { background: var(--bg2); border: 1px solid var(--line); border-radius: 20px; padding: 26px; }
-.codebox { position: relative; background: var(--code); border-radius: 12px; margin: 12px 0 4px; }
-pre { margin: 0; padding: 18px 76px 18px 18px; overflow-x: auto; color: #d8def5; font: 13.5px/1.65 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-.copy { position: absolute; top: 10px; right: 10px; border: 1px solid #2c3556; background: #1a2038; color: #c8d0ee; border-radius: 8px; padding: 5px 10px; font-size: 12px; cursor: pointer; }
-.copy:hover { background: #232b4b; }
-.fp { font: 13px/1.5 ui-monospace, Menlo, Consolas, monospace; word-break: break-all; color: var(--accent2); }
-.note { color: var(--muted); font-size: .92rem; }
-footer { border-top: 1px solid var(--line); padding: 28px 0 48px; color: var(--muted); font-size: .9rem; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-footer a { color: var(--muted); }
-</style>
-</head>
-<body>
-<div class="wrap">
-  <nav>
-    <a class="brand" href="#"><span class="logo"><svg viewBox="0 0 24 24" fill="none"><path d="M8 11V9a4 4 0 0 1 8 0v2" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><rect x="5" y="11" width="14" height="10" rx="3" fill="#fff"/></svg></span>Server Hands</a>
-    <div class="links"><a href="#how">How it works</a><a href="#install">Install</a><a href="https://github.com/mblcdr/Server-Hands">GitHub</a></div>
-  </nav>
-
-  <header class="hero">
-    <span class="pill">Debian 13 · OpenMediaVault 8 · Android</span>
-    <h1>Unlock your homelab <em>from your phone</em></h1>
-    <p class="lead">Your server boots with its encrypted drives locked. Open the app, use your fingerprint, and the drives unlock, the pool comes back and your containers start. The passphrases never leave your phone unencrypted.</p>
-    <div class="cta"><a class="btn primary" href="#install">Install on the server</a><a class="btn" href="https://github.com/mblcdr/Server-Hands#readme">Read the docs</a></div>
-  </header>
-
-  <section id="how">
-    <h2>How it works</h2>
-    <p class="sub">A small Rust service waits at boot. Your phone talks only to the server it was paired with.</p>
-    <div class="flow">
-      <div class="step"><b>Boot</b><span>The server starts with LUKS drives locked and publishes an unlock request.</span></div>
-      <div class="step"><b>Open the app</b><span>It verifies the server's pinned identity and shows which drives are waiting.</span></div>
-      <div class="step"><b>Fingerprint</b><span>A biometric releases the passphrases, sealed to a one-time key held only in server memory.</span></div>
-      <div class="step"><b>Back to normal</b><span>Drives unlock and mount, the mergerfs pool refreshes, your scripts bring up the containers.</span></div>
-    </div>
-  </section>
-
-  <section>
-    <h2>Built to be boring and safe</h2>
-    <p class="sub">LAN only, no cloud, no relay, no account.</p>
-    <div class="grid">
-      <div class="card"><div class="ic">🔐</div><h3>End-to-end encrypted</h3><p>HPKE to a per-request ephemeral key on top of pinned TLS 1.3. Recorded traffic or a stolen disk reveals nothing.</p></div>
-      <div class="card"><div class="ic">🤳</div><h3>Biometric vault</h3><p>Passphrases sit in an Android Keystore vault that needs a fresh strong biometric for every use.</p></div>
-      <div class="card"><div class="ic">🛡️</div><h3>No impersonation</h3><p>Pairing is done once over a QR from your SSH console. A changed server key is a hard failure.</p></div>
-      <div class="card"><div class="ic">⚙️</div><h3>Post-unlock scripts</h3><p>Run scripts automatically after unlock, or start them from the app. Only containers that need the drives wait.</p></div>
-      <div class="card"><div class="ic">🧩</div><h3>OpenMediaVault aware</h3><p>Mounts through your existing fstab entries and refreshes the mergerfs pool like the OMV plugin does.</p></div>
-      <div class="card"><div class="ic">🪶</div><h3>Tiny and sandboxed</h3><p>A small native systemd service, locked down to a low exposure score. Revoke a lost phone with one command.</p></div>
-    </div>
-  </section>
-
-  <section id="install">
-    <h2>Install on the server</h2>
-    <p class="sub">Signed apt repository for Debian 13 / OpenMediaVault 8, amd64. Current version: <b>0.5.0</b>.</p>
-    <div class="install">
-      <b>1. Add the repository and install</b>
-      <div class="codebox"><pre id="c1">sudo install -d -m 0755 /etc/apt/keyrings
+<!doctype html><html lang=en-US data-bs-theme=auto><head><meta charset=utf-8><meta http-equiv=x-ua-compatible content="ie=edge"><meta name=viewport content="width=device-width,initial-scale=1"><link rel=preload href=https://mblcdr.github.io/server-hands/fonts/vendor/jost/jost-v4-latin-regular.woff2 as=font type=font/woff2 crossorigin><link rel=preload href=https://mblcdr.github.io/server-hands/fonts/vendor/jost/jost-v4-latin-500.woff2 as=font type=font/woff2 crossorigin><link rel=preload href=https://mblcdr.github.io/server-hands/fonts/vendor/jost/jost-v4-latin-700.woff2 as=font type=font/woff2 crossorigin><script src=/server-hands/js/color-mode.7d9843fe8d06b487f08000f3dfc783b2c283d303e738a3e80bd25a903243b9aa.js integrity="sha256-fZhD/o0GtIfwgADz38eDssKD0wPnOKPoC9JakDJDuao="></script><link rel=stylesheet href="/server-hands/scss/app.e8a32c756e8db14157dfbc82108a4b6913b1717e425fa7c4c5c56672a736fe30.css" integrity="sha256-6KMsdW6NsUFX37yCEIpLaROxcX5CX6fExcVmcqc2/jA=" crossorigin=anonymous><noscript><style>img.lazyload{display:none}</style></noscript><base href=https://mblcdr.github.io/server-hands/><link rel=canonical href=https://mblcdr.github.io/server-hands/><link rel=alternate type=application/rss+xml href=https://mblcdr.github.io/server-hands/index.xml title="Server Hands"><link rel=sitemap type=application/xml href=https://mblcdr.github.io/server-hands/sitemap.xml title="Server Hands"><link rel=alternate type=text/plain href=https://mblcdr.github.io/server-hands/llms.txt title="Server Hands"><title>Unlock your homelab from your phone | Server Hands</title><meta name=description content="Phone-approved LUKS unlock for OpenMediaVault. Open the app, use your fingerprint, and your encrypted drives unlock end to end encrypted."><link rel=icon href=/server-hands/favicon.ico sizes=32x32><link rel=icon href=/server-hands/favicon.svg type=image/svg+xml><link rel=apple-touch-icon href=/server-hands/server-hands/apple-touch-icon.png sizes=180x180 type=image/png><link rel=icon href=/server-hands/favicon-192x192.png sizes=192x192 type=image/png><link rel=icon href=/server-hands/favicon-512x512.png sizes=512x512 type=image/png><link rel=manifest href=/server-hands/manifest.webmanifest><meta property="og:url" content="https://mblcdr.github.io/server-hands/"><meta property="og:site_name" content="Server Hands"><meta property="og:title" content="Unlock your homelab from your phone"><meta property="og:description" content="Phone-approved LUKS unlock for OpenMediaVault. Open the app, use your fingerprint, and your encrypted drives unlock end to end encrypted."><meta property="og:locale" content="en_US"><meta property="og:type" content="website"><meta property="og:image" content="https://mblcdr.github.io/server-hands/cover.png"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content="https://mblcdr.github.io/server-hands/cover.png"><meta name=twitter:title content="Unlock your homelab from your phone"><meta name=twitter:description content="Phone-approved LUKS unlock for OpenMediaVault. Open the app, use your fingerprint, and your encrypted drives unlock end to end encrypted."><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"WebSite","url":"https://mblcdr.github.io/server-hands/","name":"Server Hands","description":"Phone-approved LUKS unlock for OpenMediaVault. Open the app, use your fingerprint, and your encrypted drives unlock end to end encrypted."}]}</script><script type=application/ld+json>{"@context":"https://schema.org","@graph":[{"@type":"Organization","url":"https://mblcdr.github.io/server-hands/","name":"Server Hands","image":[{"@id":"https://mblcdr.github.io/server-hands/cover.png"}],"logo":{"@id":"https://mblcdr.github.io/server-hands/favicon-512x512.png"}}]}</script></head><body class="single home" data-bs-spy=scroll data-bs-target=#toc data-bs-root-margin="0px 0px -60%" data-bs-smooth-scroll=true tabindex=0><div class=sticky-top><header class="navbar navbar-expand-lg"><div class=container-fluid><a class="navbar-brand me-auto me-lg-3" href=/server-hands/>Server Hands</a>
+<button type=button id=searchToggleMobile class="btn btn-link nav-link mx-2 d-lg-none" aria-label="Search website">
+<svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+</button>
+<button class="btn btn-link nav-link mx-2 order-3 d-lg-none" type=button data-bs-toggle=offcanvas data-bs-target=#offcanvasNavMain aria-controls=offcanvasNavMain aria-label="Open main navigation menu">
+<svg class="icon icon-tabler icon-tabler-menu" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><line x1="4" y1="8" x2="20" y2="8"/><line x1="4" y1="16" x2="20" y2="16"/></svg></button><div class="offcanvas offcanvas-end h-auto" tabindex=-1 id=offcanvasNavMain aria-labelledby=offcanvasNavMainLabel><div class=offcanvas-header><h5 class=offcanvas-title id=offcanvasNavMainLabel>Server Hands</h5><button type=button class="btn btn-link nav-link p-0 ms-auto" data-bs-dismiss=offcanvas aria-label=Close>
+<svg class="icon icon-tabler icon-tabler-x" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M18 6 6 18"/><path d="M6 6l12 12"/></svg></button></div><div class="offcanvas-body d-flex flex-column flex-lg-row justify-content-between"><ul class="navbar-nav flex-grow-1"><li class=nav-item><a class=nav-link href=https://mblcdr.github.io/server-hands/docs/homelab-setup/>Docs</a></li><li class=nav-item><a class=nav-link href=https://mblcdr.github.io/server-hands/#install>Install</a></li></ul><button type=button id=searchToggleDesktop class="btn btn-link nav-link p-2 d-none d-lg-block" aria-label="Search website">
+<svg class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><circle cx="10" cy="10" r="7"/><line x1="21" y1="21" x2="15" y2="15"/></svg>
+</button>
+<button id=buttonColorMode class="btn btn-link nav-link mt-3 mt-lg-0 p-0 ms-lg-2 me-lg-1" type=button aria-label="Toggle theme">
+<svg data-bs-theme-value="dark" class="icon icon-tabler icon-tabler-moon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3c.132.0.263.0.393.0a7.5 7.5.0 007.92 12.446A9 9 0 1112 2.992z"/></svg>
+<svg data-bs-theme-value="light" class="icon icon-tabler icon-tabler-sun" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-4 0a4 4 0 108 0 4 4 0 10-8 0m-5 0h1m8-9v1m8 8h1m-9 8v1M5.6 5.6l.7.7m12.1-.7-.7.7m0 11.4.7.7m-12.1-.7-.7.7"/></svg></button><ul id=socialMenu class="nav flex-row order-lg-4"><li class=nav-item><a class="nav-link social-link" href=https://github.com/mblcdr/server-hands><svg class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6.0 00-1.3-3.2 4.2 4.2.0 00-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3.0 00-6.2.0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2.0 00-.1 3.2A4.6 4.6.0 004 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></svg><small class="ms-2 visually-hidden">GitHub</small></a></li></ul></div></div></div></header></div><div class=modal id=searchModal tabindex=-1 aria-labelledby=searchModalLabel aria-hidden=true><div class="modal-dialog modal-dialog-scrollable modal-fullscreen-md-down"><div class=modal-content><div class=modal-header><h2 class="modal-title fs-5 visually-hidden" id=searchModalLabel>Search</h2><button type=button class="btn-close visually-hidden" data-bs-dismiss=modal aria-label=Close></button><div class="search-input flex-grow-1 d-none"><form id=search-form class=search-form action=# method=post accept-charset=UTF-8 role=search><label for=query class=visually-hidden>Search</label><div class=d-flex><input type=search id=query name=query class="search-text form-control form-control-lg" placeholder=Search aria-label=Search maxlength=128 autocomplete=off>
+<button type=button class="btn btn-link text-decoration-none px-0 ms-3 d-md-none" data-bs-dismiss=modal aria-label=Close>Cancel</button></div></form></div></div><div class=modal-body><p class="search-loading status message d-none mt-3 text-center">Loading search index…</p><p class="search-no-recent message d-none mt-3 text-center">No recent searches</p><p class="search-no-results message d-none mt-3 text-center">No results for "<strong><span class=query-no-results>Query here</span></strong>"</p><div id=searchResults class=search-results></div><template><article class="search-result list-view"><div class="card my-3"><div class=card-body><header><h2 class="h5 title title-submitted mb-0"><a class="stretched-link text-decoration-none text-reset" href=#>Title here</a></h2><div class="submitted d-none"><time class=created-date datetime=1970-01-01T00:00:00+00:00>1970-01-01T00:00:00+00:00</time></div></header><div class=content>Summary here</div></div></div></article></template></div><div class=modal-footer><ul class="list-inline me-auto d-none d-md-block"><li class=list-inline-item><kbd class=me-2><svg width="15" height="15" aria-label="Enter key" role="img"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"><path d="M12 3.53088v3c0 1-1 2-2 2H4m3 3-3-3 3-3"/></g></svg></kbd><span class=DocSearch-Label>to select</span></li><li class=list-inline-item><kbd class=me-2><svg width="15" height="15" aria-label="Arrow down" role="img"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"><path d="M7.5 3.5v8m3-3-3 3-3-3"/></g></svg></kbd><kbd class=me-2><svg width="15" height="15" aria-label="Arrow up" role="img"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"><path d="M7.5 11.5v-8m3 3-3-3-3 3"/></g></svg></kbd><span class=DocSearch-Label>to navigate</span></li><li class=list-inline-item><kbd class=me-2><svg width="15" height="15" aria-label="Escape key" role="img"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"><path d="M13.6167 8.936c-.1065.3583-.6883.962-1.4875.962-.7993.0-1.653-.9165-1.653-2.1258v-.5678c0-1.2548.7896-2.1016 1.653-2.1016s1.3601.4778 1.4875 1.0724M9 6c-.1352-.4735-.7506-.9219-1.46-.8972-.7092.0246-1.344.57-1.344 1.2166s.4198.8812 1.3445.9805C8.465 7.3992 8.968 7.9337 9 8.5s-.454 1.398-1.4595 1.398C6.6593 9.898 6 9 5.963 8.4851m-1.4748.5368c-.2635.5941-.8099.876-1.5443.876s-1.7073-.6248-1.7073-2.204v-.4603c0-1.0416.721-2.131 1.7073-2.131.9864.0 1.6425 1.031 1.5443 2.2492h-2.956"/></g></svg></kbd><span class=DocSearch-Label>to close</span></li></ul><p class=d-md-none>Search by <a class=text-decoration-none href=https://github.com/nextapps-de/flexsearch>FlexSearch</a></p></div></div></div></div><div class="wrap container-fluid" role=document><div class=content><div class="container p-0"><section class="section container-fluid mt-n3 pb-3"><div class="row justify-content-center"><div class="col-lg-12 text-center"><h1>Unlock your homelab from your phone</h1></div><div class="col-lg-9 col-xl-8 text-center"><p class=lead>Your server boots with its encrypted drives locked. Open the app, use your fingerprint, and the drives unlock, the mergerfs pool comes back and your containers start. LAN only: no cloud, no relay, no account.</p><a class="btn btn-primary btn-cta rounded-pill btn-lg my-3" href=#install role=button>Install</a>
+<a class="btn btn-outline-primary rounded-pill btn-lg my-3" href=/server-hands/docs/homelab-setup/ role=button>Read the docs</a></div></div></section></div></div></div><div class="d-flex justify-content-start"><div class=bg-dots></div></div><section class="section section-md" id=how><div class=container><h2 class="text-center mb-4">How it works</h2><div class="row justify-content-center text-center"><div class=col-lg-3><h3 class=h5>1. Boot</h3><p>The server starts with its LUKS drives locked and publishes an unlock request.</p></div><div class=col-lg-3><h3 class=h5>2. Open the app</h3><p>It verifies the server's pinned identity and shows which drives are waiting.</p></div><div class=col-lg-3><h3 class=h5>3. Fingerprint</h3><p>A biometric releases the passphrases, sealed to a one-time key held only in server memory.</p></div><div class=col-lg-3><h3 class=h5>4. Back to normal</h3><p>Drives unlock and mount, the mergerfs pool refreshes and your scripts start the containers.</p></div></div></div></section><section class="section section-md section-features"><div class=container><div class="row justify-content-center text-center"><div class=col-lg-4><h2 class=h4>End-to-end encrypted</h2><p>HPKE to a per-request ephemeral key on top of pinned TLS 1.3. Recorded traffic or a stolen disk reveals nothing.</p></div><div class=col-lg-4><h2 class=h4>Biometric vault</h2><p>Passphrases sit in an Android Keystore vault that needs a fresh strong biometric for every use.</p></div><div class=col-lg-4><h2 class=h4>No impersonation</h2><p>Pairing is done once over a QR from your SSH console. A changed server key is a hard failure.</p></div><div class=col-lg-4><h2 class=h4>Post-unlock scripts</h2><p>Run scripts automatically after unlock, or start them from the app.</p></div><div class=col-lg-4><h2 class=h4>OpenMediaVault aware</h2><p>Mounts through your existing fstab entries and refreshes the mergerfs pool.</p></div><div class=col-lg-4><h2 class=h4>Tiny and sandboxed</h2><p>A small native systemd service. Revoke a lost phone with one command.</p></div></div></div></section><section class="section section-md" id=install><div class=container><div class="row justify-content-center"><div class=col-lg-8><h2>Install on the server</h2><p>Signed apt repository for Debian 13 / OpenMediaVault 8, amd64. Current version: <b>0.5.0</b>.</p><pre><code>sudo install -d -m 0755 /etc/apt/keyrings
 curl -fsSL https://mblcdr.github.io/server-hands/server-hands.gpg | sudo tee /etc/apt/keyrings/server-hands.gpg &gt;/dev/null
 echo "deb [signed-by=/etc/apt/keyrings/server-hands.gpg] https://mblcdr.github.io/server-hands/ ./" | sudo tee /etc/apt/sources.list.d/server-hands.list
-sudo apt update &amp;&amp; sudo apt install server-hands</pre><button class="copy" data-t="c1">Copy</button></div>
-      <p class="note">The service is not enabled automatically. Continue with <a href="https://github.com/mblcdr/Server-Hands/blob/main/docs/homelab-setup.md">the setup guide</a>: discover drives, pair your phone, add post-unlock scripts.</p>
-      <b>2. Verify the signing key</b>
-      <p class="note">Compare this fingerprint with the one in the project README before trusting the key:</p>
-      <div class="fp">8A6B7750C817E5BFCEAE8B34023D040E2ACC8026</div>
-      <div class="codebox"><pre id="c2">gpg --show-keys --with-fingerprint /etc/apt/keyrings/server-hands.gpg</pre><button class="copy" data-t="c2">Copy</button></div>
-    </div>
-  </section>
-
-  <footer>
-    <span>Server Hands · MIT licensed</span>
-    <span><a href="https://github.com/mblcdr/Server-Hands">Source</a> · <a href="server-hands.asc">Signing key</a></span>
-  </footer>
-</div>
-<script>
-document.querySelectorAll('.copy').forEach(function (b) {
-  b.addEventListener('click', function () {
-    var text = document.getElementById(b.dataset.t).innerText;
-    var done = function () { b.textContent = 'Copied'; setTimeout(function () { b.textContent = 'Copy'; }, 1500); };
-    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done); }
-  });
-});
-</script>
-</body>
-</html>
+sudo apt update &amp;&amp; sudo apt install server-hands</code></pre><p>The service is not enabled automatically. Continue with <a href=/server-hands/docs/homelab-setup/>the setup guide</a>.</p><p>Verify the signing key before trusting it. Its fingerprint is <code>8A6B7750C817E5BFCEAE8B34023D040E2ACC8026</code>:</p><pre><code>gpg --show-keys --with-fingerprint /etc/apt/keyrings/server-hands.gpg</code></pre><p>The Android app (APK) is on the <a href=https://github.com/mblcdr/server-hands/releases>GitHub Releases</a> page.</p></div></div></div></section><footer class="footer text-muted"><div class=container-fluid><div class=row><div class="col-lg-8 text-lg-start"><ul class=list-inline></ul></div><div class="col-lg-8 text-lg-end"><ul class=list-inline><li class=list-inline-item>Server Hands · MIT licensed · <a class=text-muted href=https://github.com/mblcdr/server-hands>Source</a></li></ul></div></div></div></footer><script async src=/server-hands/js/app.8d4c7adfa0c6f20e01f4f3a1ba8cf7289b79fa11f50a564b5256f5e72e4ba7e3.js integrity="sha256-jUx636DG8g4B9POhuoz3KJt5+hH1ClZLUlb15y5Lp+M="></script><script async src=/server-hands/js/flexsearch.7eba00eb5215ef91f56d713f7ca4ed0ed15a03229dad461712f9fbf791d16a25.js integrity="sha256-froA61IV75H1bXE/fKTtDtFaAyKdrUYXEvn795HRaiU="></script><script async src=/server-hands/js/search-modal.96e662d8f691fe25c859a3437074b485f2d7bed0bca612725028c6cf4322e2f2.js integrity="sha256-luZi2PaR/iXIWaNDcHS0hfLXvtC8phJyUCjGz0Mi4vI="></script></body></html>
