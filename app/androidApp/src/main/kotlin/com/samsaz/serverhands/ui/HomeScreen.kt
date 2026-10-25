@@ -1,4 +1,4 @@
-package dev.serverhands.app.ui
+package com.samsaz.serverhands.ui
 
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -40,8 +40,8 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
-import dev.serverhands.app.AppViewModel
-import dev.serverhands.app.UiState
+import com.samsaz.serverhands.AppViewModel
+import com.samsaz.serverhands.UiState
 import dev.serverhands.protocol.DriveInfo
 import dev.serverhands.protocol.RequestView
 import dev.serverhands.protocol.ScriptView

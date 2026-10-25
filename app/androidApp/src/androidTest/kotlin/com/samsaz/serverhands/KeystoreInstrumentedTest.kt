@@ -1,4 +1,4 @@
-package dev.serverhands.app
+package com.samsaz.serverhands
 
 import android.content.pm.PackageManager
 import android.security.keystore.KeyInfo
@@ -6,8 +6,8 @@ import android.security.keystore.KeyProperties
 import androidx.biometric.BiometricManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import dev.serverhands.app.keys.KeystoreDeviceSigner
-import dev.serverhands.app.keys.VaultKey
+import com.samsaz.serverhands.keys.KeystoreDeviceSigner
+import com.samsaz.serverhands.keys.VaultKey
 import dev.serverhands.crypto.Signatures
 import dev.serverhands.protocol.id
 import org.junit.Assume.assumeTrue

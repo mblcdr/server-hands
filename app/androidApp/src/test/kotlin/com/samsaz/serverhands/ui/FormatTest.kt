@@ -1,4 +1,4 @@
-package dev.serverhands.app.ui
+package com.samsaz.serverhands.ui
 
 import org.junit.Test
 import kotlin.test.assertEquals

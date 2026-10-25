@@ -1,4 +1,4 @@
-package dev.serverhands.app.ui
+package com.samsaz.serverhands.ui
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor

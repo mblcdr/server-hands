@@ -9,11 +9,11 @@ fun env(name: String): String? = providers.environmentVariable(name).orNull?.tak
 val keystorePath = env("SERVERHANDS_KEYSTORE")
 
 android {
-    namespace = "dev.serverhands.app"
+    namespace = "com.samsaz.serverhands"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "dev.serverhands"
+        applicationId = "com.samsaz.serverhands"
         minSdk = 31
         targetSdk = 36
         versionCode = (findProperty("versionCode") as String?)?.toInt() ?: 1

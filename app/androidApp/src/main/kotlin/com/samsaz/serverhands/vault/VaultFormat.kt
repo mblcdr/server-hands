@@ -1,4 +1,4 @@
-package dev.serverhands.app.vault
+package com.samsaz.serverhands.vault
 
 import dev.serverhands.crypto.Codec
 import dev.serverhands.crypto.PasswordEntry

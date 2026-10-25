@@ -1,8 +1,8 @@
-package dev.serverhands.app
+package com.samsaz.serverhands
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import dev.serverhands.app.keys.KeystoreDeviceSigner
+import com.samsaz.serverhands.keys.KeystoreDeviceSigner
 import dev.serverhands.crypto.Codec
 import dev.serverhands.crypto.PasswordEntry
 import dev.serverhands.protocol.Pin

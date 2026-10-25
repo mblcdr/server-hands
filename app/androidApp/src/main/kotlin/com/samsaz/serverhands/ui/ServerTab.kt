@@ -1,4 +1,4 @@
-package dev.serverhands.app.ui
+package com.samsaz.serverhands.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,8 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import dev.serverhands.app.UiState
-import dev.serverhands.app.vault.PairingRecord
+import com.samsaz.serverhands.UiState
+import com.samsaz.serverhands.vault.PairingRecord
 import dev.serverhands.protocol.DriveInfo
 import dev.serverhands.protocol.DriveStatus
 import dev.serverhands.protocol.PoolStatus

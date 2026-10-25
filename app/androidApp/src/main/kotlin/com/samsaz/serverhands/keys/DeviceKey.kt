@@ -1,4 +1,4 @@
-package dev.serverhands.app.keys
+package com.samsaz.serverhands.keys
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyInfo

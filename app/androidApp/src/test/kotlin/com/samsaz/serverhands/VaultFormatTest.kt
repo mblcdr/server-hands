@@ -1,9 +1,9 @@
-package dev.serverhands.app
+package com.samsaz.serverhands
 
-import dev.serverhands.app.vault.EnrolledDrive
-import dev.serverhands.app.vault.PairingRecord
-import dev.serverhands.app.vault.PairingStore
-import dev.serverhands.app.vault.VaultFormat
+import com.samsaz.serverhands.vault.EnrolledDrive
+import com.samsaz.serverhands.vault.PairingRecord
+import com.samsaz.serverhands.vault.PairingStore
+import com.samsaz.serverhands.vault.VaultFormat
 import dev.serverhands.crypto.PasswordEntry
 import dev.serverhands.crypto.ProtocolException
 import java.io.File

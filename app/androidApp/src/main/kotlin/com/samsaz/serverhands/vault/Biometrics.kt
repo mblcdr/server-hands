@@ -1,4 +1,4 @@
-package dev.serverhands.app.vault
+package com.samsaz.serverhands.vault
 
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
