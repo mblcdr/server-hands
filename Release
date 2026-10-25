@@ -1,23 +1,23 @@
 Architectures: amd64
 Codename: stable
-Date: Thu, 22 Oct 2026 02:14:56 +0000
+Date: Sun, 25 Oct 2026 04:42:46 +0000
 Description: Server Hands: phone-approved LUKS unlock for OpenMediaVault
 Label: server-hands
 Origin: server-hands
 Suite: stable
 MD5Sum:
- 2c110e49fd09f3ceb0fb09619b458a46             1938 Packages
- 35f4543cb027e7666d988c243c9ec65f              856 Packages.gz
- ae45744028105e7bb240d24b78053c6c              204 Release
+ 45fc88a347cb7d6ec862def4f1c1c2a3             1938 Packages
+ 89ae15bb1117ace48a57be0432ee48f2              859 Packages.gz
+ 3da4f8dfd1af33f9974c132538d8576e              204 Release
 SHA1:
- 94033aa50b148a8073ebee3fbf2ed1e3131aced0             1938 Packages
- 749c74e684f52101f38b8d890df0c9775bf9b676              856 Packages.gz
- 5448e7d979f9ad80d833fde610f6aea626e6430b              204 Release
+ 3594a2d812c1ec45c8218082ffa7bfa5aade5b0d             1938 Packages
+ 6b2604fb9ef5dd966f7ddf7ef7dc6debf5316209              859 Packages.gz
+ 92ef1d6358a023ae148c56a938b9078bb940bda2              204 Release
 SHA256:
- 823c83dca62c7c009137b34a931c3ee49ff8ab4ceb96e5703e36bf1f4c16a23b             1938 Packages
- ee6539a571582b70254c4fa2207095ed42246ef4d9fa148ac9e31481507f5c69              856 Packages.gz
- 8f6cc0bc100ca9b7f8d1e7cb9d4bc06a1c5f44a2488d5dac44bc171d1219978e              204 Release
+ 86fa3c4ee0aed3397044f823ece67027e5f4d61d71981652703bc2893fc9b0a8             1938 Packages
+ 5317d8247a2b5293136776c9a2b8d696e422ca5396e05c7ee6a759fc76c757cb              859 Packages.gz
+ acffd30460dd328749e15657537d60caeb33ccf12f5d36f44910bf0c24896f94              204 Release
 SHA512:
- 78b24213457091327c033366e92288e1f37b6be3267d4fee97b60729f2bebaa2f3cf1ac6697a4d170c80650dea61c60c9a776392129f696661e0a3b8002e1296             1938 Packages
- 7a92f5221e6b583b5195e286cdc08d628a1bfa0eeb70f3b8edf8ea6b5eb7d621886d25df5d9f9a154f8b4978e810791fc966ad711a66d6816d28049cbd139526              856 Packages.gz
- b11d7ed3e83a65cb56b1033667f93d13e0c842023c0fef345a54b86e9e9b797a4c45cf5bdb00a0f3ca22900de422bd63e5c60c58dcf40e06e7dc20752bfa5162              204 Release
+ 62f5baf85ace4a8f29056a14a70226aed85db280fa2be6f74c76cbc6172165a4f99dce0e331646971efdf07c7cedfd3619f634d0536e663f00d904b353cf07d6             1938 Packages
+ 4d92020216d928a868af085d7a93905a492180367e13616cd699f3039dd7abdc20f4c7376491afdca44f2754bf1fc4cca8295bfa3adcd69e4175bd06c5ec945d              859 Packages.gz
+ 23c0a3aed7fbe5e85e7ea56a8aed4837b2a52a558b53963088f02f79637949585cb7f32659d5bf4fa2fbad971194fae16d4debc9df8ba4bbc03dee7f6c969353              204 Release
