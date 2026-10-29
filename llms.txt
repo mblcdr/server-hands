@@ -11,6 +11,7 @@
 - [Homelab setup](https://mblcdr.github.io/server-hands/docs/homelab-setup/): Set up the server, pair your phone and add post-unlock scripts.
 - [Apt repository](https://mblcdr.github.io/server-hands/docs/apt-repo/): Install and upgrade the server package from the signed apt repository.
 - [Android app release](https://mblcdr.github.io/server-hands/docs/android-release/): Build, sign and release the Android app.
+- [iPhone, iPad and Mac app](https://mblcdr.github.io/server-hands/docs/apple-app/): Build, sign and run the SwiftUI app for iOS, iPadOS and macOS.
 - [Protocol v1](https://mblcdr.github.io/server-hands/docs/protocol/): Wire format, encodings and cryptography used between the app and the server.
 - [Threat model](https://mblcdr.github.io/server-hands/docs/threat-model/): What Server Hands protects, and against whom.
 
