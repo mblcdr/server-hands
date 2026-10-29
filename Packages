@@ -49,3 +49,20 @@ SHA256: 19bf3faf487e0677beddf3135ec2c64c8ca48e79025df74cab32c95889cb34da
 SHA512: 168fd708fe4c6bdc4961ed28601fded70cc8d5941eccdf84fe53ce4f6ee9a15e2c59ea75ad2d212260c51f906c2c2f3dd92b35a4020a7e35e1b8b425bccf183b
 Description: Phone-approved LUKS unlock daemon for OpenMediaVault
 
+Package: server-hands
+Architecture: amd64
+Version: 0.6.0
+Priority: optional
+Section: admin
+Maintainer: Hamid Moazzami <hi@samsaz.com>
+Installed-Size: 2809
+Depends: libc6, libcryptsetup12, systemd
+Recommends: cryptsetup-bin
+Filename: pool/server-hands_0.6.0_amd64.deb
+Size: 1047056
+MD5sum: b1ab718014fe1c7f42b31af9aeb11209
+SHA1: 68d961747871f02c48b9ba02c0d96548fe71200c
+SHA256: e0fe38cdb6d1be4e5b860bf5acc005cd74e1cd47ec7f1c7e2074d3f441347979
+SHA512: d6d85a5ae7aa4d0ecd44d407a1436b6fa674309b2eee7f2a7434f235444e379a3240986b9938ddc7c0d4441a4e8297d840499aafe3979c0a34692db3762e30e7
+Description: Phone-approved LUKS unlock daemon for OpenMediaVault
+
