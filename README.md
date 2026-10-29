@@ -32,7 +32,7 @@ Security properties in short: pinned TLS plus a pinned Ed25519 server identity (
 | `app/apple/` | SwiftUI app for iOS, iPadOS and macOS (one target): `Kit/` Swift package (crypto, protocol, vault, pinned TLS) and `App/` (UI, Secure Enclave, Face ID / Touch ID). Built with XcodeGen. |
 | `protocol/vectors/` | Test vectors that both the Rust and Kotlin implementations must pass. |
 | `site/` | The Hugo + Doks site published on GitHub Pages: landing page and all documentation (setup guide, protocol, threat model, apt repository, Android release and signing) under `site/content/docs/`. |
-| `.github/workflows/` | `deb.yml` (tests, `.deb`, signed apt repo, Pages) and `app.yml` (tests, signed APK). |
+| `.github/workflows/` | `deb.yml` (tests, `.deb`, signed apt repo, Pages) and `app.yml` (tests, signed APK), `apple.yml` (Swift tests, builds, unsigned sideloadable `.ipa`). |
 | `PLAN.md` | Decisions, architecture and phase status. |
 
 ## Install the server
@@ -54,7 +54,7 @@ Download `server-hands_X.Y.Z.apk` from the [GitHub Release](https://github.com/m
 
 ### iPhone, iPad, Mac
 
-Build from source for now: `cd app/apple && xcodegen generate && open ServerHands.xcodeproj` (Xcode 15.3+, iOS 16 / macOS 13). Details, signing and limits are in [docs/apple-app.md](https://mblcdr.github.io/server-hands/docs/apple-app/).
+Download `server-hands_X.Y.Z.ipa` from the [GitHub Release](https://github.com/mblcdr/Server-Hands/releases) and install it with [SideStore](https://sidestore.io) or AltStore (the IPA is unsigned; they sign it with your Apple ID). Or build from source: `cd app/apple && xcodegen generate && open ServerHands.xcodeproj` (Xcode 15.3+, iOS 16 / macOS 13). Details, signing and limits are in [docs/apple-app.md](https://mblcdr.github.io/server-hands/docs/apple-app/).
 
 ## Set it up
 

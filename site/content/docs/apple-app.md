@@ -60,4 +60,10 @@ Enrolling a new fingerprint or face invalidates the vault key and the approval k
 - **Wake-on-LAN on iOS** broadcasts a UDP packet. Apple requires the *Multicast Networking* entitlement (`com.apple.developer.networking.multicast`, granted on request) for broadcast on iOS. Without it the send can be refused on a device. It works on the Mac. The entitlement is not in the project because an unapproved one breaks signing.
 - **QR scanning** is iOS and iPadOS only. On the Mac, paste the `hands://` link printed by `handsctl pair`.
 - Passphrases are typed into a SwiftUI `SecureField`, which is a `String`. The app converts it to bytes and clears the field at once, but unlike the Android app it cannot avoid the string entirely.
-- No App Store or TestFlight pipeline yet; builds are from source.
+- No App Store or TestFlight pipeline; builds are from source or sideloaded (below).
+
+## Sideloading the .ipa
+
+Each `v*` tag attaches `server-hands_X.Y.Z.ipa` and `SHA256SUMS-ipa` to the GitHub Release (every CI run also uploads it as the `server-hands-ipa` artifact). The IPA is **unsigned**: open it in [SideStore](https://sidestore.io) or AltStore and it is signed with your own Apple ID and installed. A free Apple ID's signature lasts 7 days and SideStore refreshes it; at most 3 sideloaded apps and 10 App IDs per week.
+
+Sideloading re-signs the app with its own identifiers and entitlements, so the Secure Enclave keys and Keychain items work but belong to that installed copy: re-pair after reinstalling under a different Apple ID.

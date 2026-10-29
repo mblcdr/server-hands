@@ -1,10 +1,12 @@
 name: apple
 
 # Swift package tests and unsigned builds of the SwiftUI app for iOS (simulator) and macOS.
-# Signing, TestFlight and releases are not set up yet.
+# Also packs an unsigned .ipa for sideloading with SideStore/AltStore (they sign it with the user's own Apple ID).
+# Tags `v*`: attach the .ipa and its checksum to the GitHub Release. No App Store or TestFlight pipeline.
 on:
   push:
     branches: [main]
+    tags: ["v*"]
     paths: ["app/apple/**", "protocol/**", ".github/workflows/apple.yml"]
   pull_request:
     paths: ["app/apple/**", "protocol/**", ".github/workflows/apple.yml"]
@@ -16,6 +18,8 @@ permissions:
 jobs:
   build:
     runs-on: macos-latest
+    permissions:
+      contents: write # attaches the .ipa to the release on tags
     steps:
       - uses: actions/checkout@v7
 
@@ -36,3 +40,53 @@ jobs:
       - name: Build iOS
         working-directory: app/apple
         run: xcodebuild -project ServerHands.xcodeproj -scheme ServerHands -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build
+
+      - name: Version
+        id: ver
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = tag ]; then
+            name="${GITHUB_REF_NAME#v}"
+          else
+            name="0.0.0-${GITHUB_RUN_NUMBER}"
+          fi
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+          echo "Marketing version (numeric part): ${name%%[-+]*}"
+
+      # Unsigned device build, zipped as Payload/*.app. SideStore re-signs it on install.
+      - name: Build unsigned iOS device app (Release)
+        working-directory: app/apple
+        run: |
+          xcodebuild -project ServerHands.xcodeproj -scheme ServerHands -configuration Release \
+            -destination 'generic/platform=iOS' -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            MARKETING_VERSION="$(echo '${{ steps.ver.outputs.name }}' | sed 's/[-+].*//')" \
+            CURRENT_PROJECT_VERSION="${GITHUB_RUN_NUMBER}" \
+            build
+
+      - name: Package the .ipa
+        working-directory: app/apple
+        run: |
+          app=$(find build/Build/Products/Release-iphoneos -maxdepth 1 -name '*.app' | head -1)
+          [ -n "$app" ] || { echo "::error::no .app produced"; exit 1; }
+          rm -rf Payload && mkdir -p Payload ../../dist
+          cp -R "$app" Payload/
+          ipa="../../dist/server-hands_${{ steps.ver.outputs.name }}.ipa"
+          zip -qry "$ipa" Payload
+          cd ../../dist && shasum -a 256 *.ipa | tee SHA256SUMS-ipa
+          unzip -l ./*.ipa | head -20
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: server-hands-ipa
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Attach to the GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" --title "$tag" --generate-notes
+          gh release upload "$tag" dist/*.ipa dist/SHA256SUMS-ipa --clobber
