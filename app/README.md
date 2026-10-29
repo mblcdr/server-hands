@@ -5,7 +5,9 @@ core/crypto     HPKE, Ed25519, P-256 verify, SAS, zeroing helpers (BouncyCastle 
 core/protocol   Wire models, SPKI-pinned TLS 1.3 client (plain HttpsURLConnection + custom trust manager), ServerClient:
                 pair / list / approve / scripts (list and run post-unlock scripts) with every reply verified against the pinned server key and bound to a fresh nonce.
 androidApp      Compose UI (requests, "After unlock" scripts card), Keystore device key, biometric-gated vault, QR pairing. minSdk 31.
-desktopApp      Phase 6 (Compose Desktop, reuses core:*).
+desktopApp      Not planned any more: macOS is covered by the native Apple app.
+
+The iPhone, iPad and Mac app is a separate SwiftUI project in `apple/` (not part of this Gradle build), see `apple/` and `../site/content/docs/apple-app.md`.
 ```
 
 Build (JDK 17, Android SDK; `local.properties` with `sdk.dir`):

@@ -1,0 +1,62 @@
+name: ServerHands
+options:
+  bundleIdPrefix: com.samsaz
+  deploymentTarget:
+    iOS: "16.0"
+    macOS: "13.0"
+  createIntermediateGroups: true
+packages:
+  ServerHandsKit:
+    path: Kit
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MARKETING_VERSION: "0.5.0"
+    CURRENT_PROJECT_VERSION: "1"
+    # Set your team in a local, untracked Signing.xcconfig (DEVELOPMENT_TEAM = ABCDE12345); see ../../site/content/docs/apple-app.md.
+configFiles:
+  Debug: Signing.xcconfig
+  Release: Signing.xcconfig
+targets:
+  ServerHands:
+    type: application
+    supportedDestinations: [iOS, macOS]
+    sources: [App]
+    dependencies:
+      - package: ServerHandsKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.samsaz.serverhands
+        PRODUCT_NAME: Server Hands
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Server Hands
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        INFOPLIST_KEY_NSFaceIDUsageDescription: "Server Hands uses Face ID to release your drive passphrases and to approve scripts."
+        INFOPLIST_KEY_NSCameraUsageDescription: "Server Hands scans the pairing QR code shown by handsctl pair."
+        INFOPLIST_KEY_NSLocalNetworkUsageDescription: "Server Hands talks to your server and sends Wake-on-LAN packets on the local network."
+        ENABLE_PREVIEWS: YES
+        CODE_SIGN_ENTITLEMENTS: App/ServerHands.entitlements
+        CODE_SIGN_STYLE: Automatic
+        ENABLE_HARDENED_RUNTIME: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+      configs:
+        Debug:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: "DEBUG"
+    info:
+      path: App/Info.plist
+      properties:
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+schemes:
+  ServerHands:
+    build:
+      targets:
+        ServerHands: all
+    run:
+      config: Debug

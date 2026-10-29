@@ -69,15 +69,19 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** Runs [block] with a busy label, turning every failure into a user message that never carries secrets. */
-    private fun op(label: String, block: suspend () -> Unit) {
+    private fun op(label: String, revocable: Boolean = true, block: suspend () -> Unit) {
         viewModelScope.launch {
+            connectionIssue = false
             _state.update { it.copy(busy = label, message = null) }
             try {
                 block()
             } catch (e: AuthCancelled) {
                 _state.update { it.copy(message = "Cancelled.") }
             } catch (e: Exception) {
-                _state.update { it.copy(message = describe(e)) }
+                if (!(revocable && forgetIfRevoked(e))) {
+                    _state.update { it.copy(message = describe(e)) }
+                    connectionIssue = e is IOException && e !is ServerException
+                }
             } finally {
                 _state.update { it.copy(busy = null, sas = null) }
             }
@@ -112,7 +116,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         else -> "Unexpected error."
     }
 
-    fun pair(text: String, deviceName: String) = op("Pairing with server...") {
+    fun pair(text: String, deviceName: String) = op("Pairing with server...", revocable = false) {
         val uri = try {
             PairingUri.parse(text)
         } catch (_: ProtocolException) {
@@ -133,16 +137,17 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             dev.serverhands.crypto.Codec.b64e(uri.pin.serverPub), alias, deviceName)
         store.clear()
         store.save(rec)
-        _state.update { it.copy(pairing = rec, message = "Paired. Refresh to see unlock requests.") }
+        _state.update { it.copy(pairing = rec, message = "Paired.") }
     }
 
-    fun refresh() = op("Checking unlock requests...") {
+    fun refresh() = op("Connecting to server...") {
         val p = _state.value.pairing ?: return@op
         val c = client(p)
         try {
             val listing = withContext(Dispatchers.IO) { c.list() }
             val scripts = withContext(Dispatchers.IO) { c.scripts() }
-            _state.update { it.copy(requests = listing.requests, scripts = scripts, connected = true, message = if (listing.requests.isEmpty()) "No drives waiting to be unlocked." else null) }
+            val status = try { withContext(Dispatchers.IO) { c.status() } } catch (_: ServerException) { null } catch (_: java.io.IOException) { null }
+            _state.update { it.copy(requests = listing.requests, scripts = scripts, status = status ?: it.status, connected = true) }
         } catch (e: Exception) {
             // A refusal means the server answered; anything else (timeout, wrong identity, bad reply) means it did not count.
             _state.update { it.copy(connected = e is ServerException) }
@@ -153,6 +158,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private var lastCheck = 0L
 
     private var pollJob: Job? = null
+
+    /** The last failure was "cannot reach the server": the poll clears it and loads what the failed check missed. */
+    private var connectionIssue = false
 
     /**
      * Called when the app comes to the foreground: (re)connects or confirms the connection, unless something is
@@ -184,10 +192,19 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val p = _state.value.pairing ?: return
         if (_state.value.busy != null) return
         try {
-            val st = withContext(Dispatchers.IO) { client(p).status() }
+            val c = client(p)
+            val st = withContext(Dispatchers.IO) { c.status() }
             _state.update { it.copy(status = st, connected = true) }
+            // Connected but nothing loaded yet (just paired, or the first refresh failed): load the scripts without a click.
+            if ((_state.value.scripts == null || connectionIssue) && _state.value.busy == null) {
+                val listing = withContext(Dispatchers.IO) { c.list() }
+                val scripts = withContext(Dispatchers.IO) { c.scripts() }
+                _state.update { it.copy(requests = listing.requests, scripts = scripts, message = if (connectionIssue) null else it.message) }
+                connectionIssue = false
+            }
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e
+            if (forgetIfRevoked(e)) return
             _state.update { it.copy(connected = e is ServerException) }
         }
     }
@@ -197,7 +214,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
      * script first gets a challenge from the server, which the biometric-bound approval key signs; that prompt
      * is the confirmation, so the UI shows no extra dialog for it.
      */
-    fun runScript(activity: FragmentActivity, script: ScriptView) = op("Starting script...") {
+    fun runScript(activity: FragmentActivity, script: ScriptView) = op("Running script...") {
         val p = _state.value.pairing ?: return@op
         val c = client(p)
         if (script.biometricProtection) {
@@ -314,6 +331,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun clearResults() = _state.update { it.copy(results = emptyList()) }
+
+    /** The server answers "unauthorized" to a device it does not know (revoked or removed): drop the stale pairing. */
+    private fun forgetIfRevoked(e: Exception): Boolean {
+        if (_state.value.pairing == null || e !is ServerException || e.code != "unauthorized") return false
+        forget()
+        _state.update { it.copy(message = "The server removed this phone, so it was forgotten. Pair again to reconnect.") }
+        return true
+    }
 
     fun forget() {
         _state.value.pairing?.let { KeystoreDeviceSigner.delete(it.keyAlias) }

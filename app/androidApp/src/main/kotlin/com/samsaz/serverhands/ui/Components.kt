@@ -3,6 +3,8 @@ package com.samsaz.serverhands.ui
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -51,7 +53,7 @@ fun IconBadge(icon: ImageVector, tint: Color, container: Color, size: Dp = 44.dp
 
 /** A small rounded label such as "Connected" or "Passphrase saved". */
 @Composable
-fun Pill(text: String, color: Color) = Surface(shape = CircleShape, color = color.copy(alpha = 0.14f)) {
+fun Pill(text: String, color: Color) = Surface(shape = CircleShape, color = Color.Transparent, border = BorderStroke(1.dp, color.copy(alpha = 0.6f))) {
     Text(text, color = color, style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp))
 }
 
@@ -70,3 +72,18 @@ fun UsageBar(fraction: Float, modifier: Modifier = Modifier) = LinearProgressInd
 @Composable
 fun SectionTitle(text: String, modifier: Modifier = Modifier) =
     Text(text, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = modifier.padding(top = 8.dp, start = 4.dp))
+
+/** A floating rounded status bubble above the navigation bar. */
+@Composable
+fun BusyBubble(label: String) = Surface(
+    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+    shape = CircleShape,
+    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    contentColor = MaterialTheme.colorScheme.onSurface,
+    tonalElevation = 3.dp, shadowElevation = 6.dp,
+) {
+    Row(Modifier.padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+        Text(label, style = MaterialTheme.typography.bodyMedium)
+    }
+}

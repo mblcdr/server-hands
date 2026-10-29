@@ -1,0 +1,6 @@
+*.xcodeproj
+Signing.local.xcconfig
+xcuserdata/
+.build/
+DerivedData/
+App/Info.plist

@@ -7,6 +7,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -59,21 +61,27 @@ fun ServerTab(
         item { ConnectionPanel(ui, pairing, idle, onWake, onForget) }
         ui.status?.let { s -> item { MachinePanel(s) } }
 
-        item {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                SectionTitle("Unlock requests")
-                FilledTonalButton(onClick = onRefresh, enabled = idle) { Text("Check") }
+        // Only while connected, and only when something is waiting or a drive is still locked.
+        val drives = ui.status?.drives
+        val stillLocked = drives != null && !(drives.isNotEmpty() && drives.all { it.state == "mounted" || it.state == "open" })
+        if (ui.connected == true && (ui.requests.isNotEmpty() || stillLocked)) {
+            item {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    SectionTitle("Unlock requests")
+                    FilledTonalButton(onClick = onRefresh, enabled = idle) { Text("Check") }
+                }
             }
-        }
-        if (ui.requests.isEmpty()) {
-            item { Text("No drives waiting to be unlocked.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 4.dp)) }
-        }
-        ui.requests.forEach { r ->
-            items(r.drives, key = { "${r.reqId}/${it.luksUuid}" }) { d -> RequestDriveItem(d, saved = d.luksUuid in enrolled) }
-            item(key = r.reqId) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    if (r.drives.any { it.luksUuid in enrolled }) Button(onClick = { onUnlock(r) }, enabled = idle) { Text("Unlock") }
-                    if (r.drives.any { it.luksUuid !in enrolled }) OutlinedButton(onClick = { onEnroll(r) }, enabled = idle) { Text("Save passphrases") }
+            if (ui.requests.isEmpty()) {
+                item { Text("No drives waiting to be unlocked.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(start = 4.dp)) }
+            }
+            ui.requests.forEach { r ->
+                items(r.drives, key = { "${r.reqId}/${it.luksUuid}" }) { d -> RequestDriveItem(d, saved = d.luksUuid in enrolled) }
+                item(key = r.reqId) {
+                    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        val big = Modifier.widthIn(max = 420.dp).fillMaxWidth().height(52.dp)
+                        if (r.drives.any { it.luksUuid in enrolled }) Button(onClick = { onUnlock(r) }, enabled = idle, modifier = big) { Text("Unlock", style = MaterialTheme.typography.titleMedium) }
+                        if (r.drives.any { it.luksUuid !in enrolled }) FilledTonalButton(onClick = { onEnroll(r) }, enabled = idle, modifier = big) { Text("Save passphrases", style = MaterialTheme.typography.titleMedium) }
+                    }
                 }
             }
         }
@@ -197,12 +205,12 @@ private fun DriveUsageItem(d: DriveStatus) = Panel {
 @Composable
 private fun PoolItem(p: PoolStatus) = Panel {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        IconBadge(AppIcons.Layers, MaterialTheme.colorScheme.secondary, MaterialTheme.colorScheme.secondaryContainer)
+        IconBadge(AppIcons.Layers, MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
         Column(Modifier.weight(1f)) {
             Text(p.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             Text(p.mountPoint, style = MaterialTheme.typography.labelSmall, fontFamily = FontFamily.Monospace, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        if (p.mounted) Pill(p.fstype.removePrefix("fuse.").ifEmpty { "pool" }, MaterialTheme.colorScheme.secondary) else Pill("Not mounted", MaterialTheme.colorScheme.outline)
+        if (p.mounted) Pill(p.fstype.removePrefix("fuse.").ifEmpty { "pool" }, MaterialTheme.colorScheme.primary) else Pill("Not mounted", MaterialTheme.colorScheme.outline)
     }
     if (p.mounted) {
         Text(formatBytes(p.total), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)

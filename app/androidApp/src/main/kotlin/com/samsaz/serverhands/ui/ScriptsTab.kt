@@ -78,7 +78,7 @@ private fun ScriptItem(s: ScriptView, enabled: Boolean, onRun: () -> Unit) = Pan
             )
             if (s.biometricProtection || s.requiresConfirmation) {
                 Row(Modifier.padding(top = 6.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    if (s.biometricProtection) Pill("Biometric", MaterialTheme.colorScheme.secondary)
+                    if (s.biometricProtection) Pill("Biometric", MaterialTheme.colorScheme.primary)
                     else Pill("Asks first", MaterialTheme.colorScheme.outline)
                 }
             }

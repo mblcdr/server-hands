@@ -3,6 +3,13 @@ package com.samsaz.serverhands.ui
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
@@ -70,14 +77,6 @@ fun HomeScreen(vm: AppViewModel, activity: FragmentActivity) {
     Scaffold(
         bottomBar = {
             Column {
-                ui.busy?.let { label ->
-                    Surface(Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer) {
-                        Row(Modifier.padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
-                            Text(label, style = MaterialTheme.typography.bodyMedium)
-                        }
-                    }
-                }
                 if (pairing != null) NavigationBar {
                     NavigationBarItem(selected = tab == 0, onClick = { tab = 0 }, icon = { Icon(AppIcons.Server, null) }, label = { Text("Server") })
                     NavigationBarItem(selected = tab == 1, onClick = { tab = 1 }, icon = { Icon(AppIcons.Terminal, null) }, label = { Text("Scripts") })
@@ -85,7 +84,10 @@ fun HomeScreen(vm: AppViewModel, activity: FragmentActivity) {
             }
         },
     ) { pad ->
-        Column(Modifier.fillMaxSize().padding(pad)) {
+        // The bubble floats above the navigation bar; the content gives it room so the list can scroll clear of it.
+        val bubbleRoom by animateDpAsState(if (ui.busy != null) 64.dp else 0.dp, label = "bubbleRoom")
+        Box(Modifier.fillMaxSize().padding(pad)) {
+        Column(Modifier.fillMaxSize().padding(bottom = bubbleRoom)) {
             when {
                 pairing == null -> LazyColumn(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     item { Header("Server Hands") }
@@ -109,6 +111,11 @@ fun HomeScreen(vm: AppViewModel, activity: FragmentActivity) {
                     },
                 )
             }
+        }
+        AnimatedVisibility(
+            visible = ui.busy != null, modifier = Modifier.align(Alignment.BottomCenter),
+            enter = fadeIn() + slideInVertically { it }, exit = fadeOut() + slideOutVertically { it },
+        ) { BusyBubble(ui.busy.orEmpty()) }
         }
     }
 

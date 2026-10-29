@@ -13,7 +13,7 @@ Status (2026-10-21): Phases 1 to 4 done. Phase 4 was run on the real server: thr
 | Server language | **Rust** (tokio current-thread, hyper, rustls/ring, libcryptsetup loaded via dlopen so the build needs no dev package; logging is plain stderr to journald, no tracing crate). Target <8 MB RSS idle (`MemoryMax` for the daemon ~24 MB). |
 | Unlock | libcryptsetup directly, in a short-lived child started with `systemd-run --pipe` (own cgroup with `MemoryMax=1536M`, `mlockall`; passphrases go over its stdin as the normative plaintext, so the daemon itself keeps `MemoryMax=32M` and only `CAP_IPC_LOCK`). **Never** `omv-rpc` or the `cryptsetup` CLI with the passphrase (argv is visible in `ps`; `omv-rpc` has no stdin option, confirmed on the box). |
 | Network | LAN only. No WireGuard/Tailscale/relay in v1. |
-| App | Kotlin Multiplatform, Compose Multiplatform. **Android first (minSdk 31)**, macOS later as **Compose Desktop (JVM)**. Both clients are JVM, so crypto lives in a shared `jvmCommon` source set. |
+| App | Kotlin Multiplatform, Compose Multiplatform. **Android first (minSdk 31)**, Apple platforms (iOS, iPadOS, macOS) as a **native SwiftUI app** (`app/apple/`): the crypto core is JVM-only (BouncyCastle), so the Swift client is a port checked against the shared vectors, not shared code. |
 | Root disk | Unencrypted (Docker data-root is on it too). |
 | Drives | 3x LUKS2 (Disk-1, Disk-2, Disk-3), ext4 on LUKS, fstab entries `nofail`, no crypttab entries. mergerfs pool `Pool` on top. |
 
@@ -88,7 +88,7 @@ app/         Gradle KMP: core:crypto, core:protocol, core:data, feature:*, andro
 | 3 | Android MVP (**done**) | pairing, vault, biometric flow, requests list, approve; verified on a real phone: pair, save passphrase, biometric unlock of a test container; interop and Keystore signing also covered by automated tests. Not yet run on a phone: the instrumented Keystore property tests (`connectedDebugAndroidTest`) and a StrongBox check |
 | 4 | Full homelab flow (**done**) | verified on the real server: 3 drives, mergerfs pool refresh, post-unlock scripts (auto and from the app), `DefaultDeviceTimeoutSec=10s` (boot ~14 s, first device timeouts at ~12.8 s), reboot test, recovery docs. Gating of Docker and services was dropped in favour of scripts |
 | 5 | Hardening (**started**) | done: signed apt repo, signed APK in CI, R8 minify checked by instrumented tests on an emulator, Gradle dependency verification. Open: fuzzing, `cargo-deny`/`cargo-audit`, canary leak test, reproducible builds, SBOM |
-| 6 | macOS | Compose Desktop; Keychain/Secure Enclave via `expect/actual`; Touch ID with a Secure Enclave key |
+| 6 | Apple (iOS, iPadOS, macOS) | **Started.** Native SwiftUI app in `app/apple/` instead of Compose Desktop: Secure Enclave device key, biometric-gated Keychain vault, pinned `URLSession`. Swift port passes the shared vectors and the Rust interop test. Not yet run on a device (Secure Enclave, Face ID, QR scan, Wake-on-LAN broadcast entitlement); no TestFlight or release pipeline |
 
 ## Open items
 

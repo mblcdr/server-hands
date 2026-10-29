@@ -1,0 +1,38 @@
+name: apple
+
+# Swift package tests and unsigned builds of the SwiftUI app for iOS (simulator) and macOS.
+# Signing, TestFlight and releases are not set up yet.
+on:
+  push:
+    branches: [main]
+    paths: ["app/apple/**", "protocol/**", ".github/workflows/apple.yml"]
+  pull_request:
+    paths: ["app/apple/**", "protocol/**", ".github/workflows/apple.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Package tests (vectors; the Rust interop test skips without fake_server)
+        working-directory: app/apple/Kit
+        run: swift test
+
+      - name: Generate the Xcode project
+        working-directory: app/apple
+        run: |
+          brew install xcodegen
+          xcodegen generate
+
+      - name: Build macOS
+        working-directory: app/apple
+        run: xcodebuild -project ServerHands.xcodeproj -scheme ServerHands -destination 'generic/platform=macOS' CODE_SIGNING_ALLOWED=NO build
+
+      - name: Build iOS
+        working-directory: app/apple
+        run: xcodebuild -project ServerHands.xcodeproj -scheme ServerHands -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO build

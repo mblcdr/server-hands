@@ -28,7 +28,8 @@ Security properties in short: pinned TLS plus a pinned Ed25519 server identity (
 | Path | Contents |
 |---|---|
 | `server/` | Rust workspace: `handsd` (daemon), `handsctl` (pairing, discovery, keyslots, revoke), `hands-proto` (wire types and crypto), `hands-client` (test client). Packaging (systemd units, config template, `.deb` scripts) in `server/packaging/`. |
-| `app/` | Kotlin Multiplatform Gradle build: `core:crypto`, `core:protocol`, `androidApp` (Compose UI, Keystore, QR pairing, minSdk 31). macOS client planned. |
+| `app/` | Kotlin Multiplatform Gradle build: `core:crypto`, `core:protocol`, `androidApp` (Compose UI, Keystore, QR pairing, minSdk 31). |
+| `app/apple/` | SwiftUI app for iOS, iPadOS and macOS (one target): `Kit/` Swift package (crypto, protocol, vault, pinned TLS) and `App/` (UI, Secure Enclave, Face ID / Touch ID). Built with XcodeGen. |
 | `protocol/vectors/` | Test vectors that both the Rust and Kotlin implementations must pass. |
 | `site/` | The Hugo + Doks site published on GitHub Pages: landing page and all documentation (setup guide, protocol, threat model, apt repository, Android release and signing) under `site/content/docs/`. |
 | `.github/workflows/` | `deb.yml` (tests, `.deb`, signed apt repo, Pages) and `app.yml` (tests, signed APK). |
@@ -50,6 +51,10 @@ Or download the `.deb` from a release and run `sudo apt install ./server-hands_X
 ## Install the app
 
 Download `server-hands_X.Y.Z.apk` from the [GitHub Release](https://github.com/mblcdr/Server-Hands/releases) of the same version (check it against `SHA256SUMS`) and install it on the phone (Android 12+, minSdk 31). It is signed with the project's release key; see [docs/android-release.md](https://mblcdr.github.io/server-hands/docs/android-release/) for the signing setup and how to build it yourself. A phone with a strong biometric is required.
+
+### iPhone, iPad, Mac
+
+Build from source for now: `cd app/apple && xcodegen generate && open ServerHands.xcodeproj` (Xcode 15.3+, iOS 16 / macOS 13). Details, signing and limits are in [docs/apple-app.md](https://mblcdr.github.io/server-hands/docs/apple-app/).
 
 ## Set it up
 

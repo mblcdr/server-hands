@@ -1,0 +1,3 @@
+// Optional local overrides, not committed with a team id. Copy to Signing.local.xcconfig if you prefer.
+// DEVELOPMENT_TEAM = ABCDE12345
+#include? "Signing.local.xcconfig"
