@@ -9,6 +9,7 @@ import com.samsaz.serverhands.keys.ApprovalKey
 import com.samsaz.serverhands.keys.KeySecurityException
 import com.samsaz.serverhands.keys.KeystoreDeviceSigner
 import com.samsaz.serverhands.keys.VaultKey
+import com.samsaz.serverhands.net.WakeOnLan
 import com.samsaz.serverhands.vault.AuthCancelled
 import com.samsaz.serverhands.vault.AuthFailed
 import com.samsaz.serverhands.vault.Biometrics
@@ -111,7 +112,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         else -> "Unexpected error."
     }
 
-    fun pair(text: String, deviceName: String) = op("Pairing") {
+    fun pair(text: String, deviceName: String) = op("Pairing with server...") {
         val uri = try {
             PairingUri.parse(text)
         } catch (_: ProtocolException) {
@@ -135,7 +136,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _state.update { it.copy(pairing = rec, message = "Paired. Refresh to see unlock requests.") }
     }
 
-    fun refresh() = op("Checking server") {
+    fun refresh() = op("Checking unlock requests...") {
         val p = _state.value.pairing ?: return@op
         val c = client(p)
         try {
@@ -196,7 +197,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
      * script first gets a challenge from the server, which the biometric-bound approval key signs; that prompt
      * is the confirmation, so the UI shows no extra dialog for it.
      */
-    fun runScript(activity: FragmentActivity, script: ScriptView) = op("Starting script") {
+    fun runScript(activity: FragmentActivity, script: ScriptView) = op("Starting script...") {
         val p = _state.value.pairing ?: return@op
         val c = client(p)
         if (script.biometricProtection) {
@@ -232,7 +233,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /** Stores [passphrases] (uuid -> raw bytes, taken over and wiped) in the vault behind a biometric. */
-    fun enroll(activity: FragmentActivity, drives: List<dev.serverhands.protocol.DriveInfo>, passphrases: Map<String, ByteArray>) = op("Saving") {
+    fun enroll(activity: FragmentActivity, drives: List<dev.serverhands.protocol.DriveInfo>, passphrases: Map<String, ByteArray>) = op("Saving passphrases...") {
         val p = _state.value.pairing ?: return@op
         val fresh = passphrases.map { (u, pw) -> PasswordEntry(ServerClient.parseUuid(u), pw) }
         var existing = emptyList<PasswordEntry>()
@@ -258,7 +259,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun unlock(activity: FragmentActivity, request: RequestView) = op("Unlocking") {
+    fun unlock(activity: FragmentActivity, request: RequestView) = op("Unlocking drives...") {
         val p = _state.value.pairing ?: return@op
         val client = client(p)
         // Always act on a fresh, verified listing: its nonce is what the approval is bound to.
@@ -292,6 +293,24 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val after = withContext(Dispatchers.IO) { client.list() }
         val scripts = withContext(Dispatchers.IO) { client.scripts() }
         _state.update { it.copy(requests = after.requests, scripts = scripts, message = null) }
+    }
+
+    /** Broadcasts a Wake-on-LAN packet; a [newMac] is validated and saved first. */
+    fun wake(newMac: String? = null) = op("Sending Wake-on-LAN packet...") {
+        var p = _state.value.pairing ?: return@op
+        if (newMac != null) {
+            val mac = WakeOnLan.normalize(newMac)
+            if (mac == null) {
+                _state.update { it.copy(message = "That is not a MAC address (like aa:bb:cc:dd:ee:ff).") }
+                return@op
+            }
+            p = p.withMac(mac)
+            store.save(p)
+            _state.update { it.copy(pairing = p) }
+        }
+        val mac = p.mac ?: return@op
+        withContext(Dispatchers.IO) { WakeOnLan.send(mac) }
+        _state.update { it.copy(message = "Wake-on-LAN packet sent. The server may take a minute to start.") }
     }
 
     fun clearResults() = _state.update { it.copy(results = emptyList()) }

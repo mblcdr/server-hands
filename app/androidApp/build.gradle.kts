@@ -16,7 +16,7 @@ android {
         applicationId = "com.samsaz.serverhands"
         minSdk = 31
         targetSdk = 36
-        versionCode = (findProperty("versionCode") as String?)?.toInt() ?: 1
+        versionCode = (findProperty("versionCode") as String?)?.toInt() ?: 500
         versionName = (findProperty("versionName") as String?) ?: "0.5.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         testProguardFiles("proguard-test-rules.pro")

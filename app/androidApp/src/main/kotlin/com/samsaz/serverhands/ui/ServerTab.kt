@@ -1,5 +1,11 @@
 package com.samsaz.serverhands.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,12 +15,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
@@ -36,6 +46,7 @@ fun ServerTab(
     onUnlock: (RequestView) -> Unit,
     onEnroll: (RequestView) -> Unit,
     onForget: () -> Unit,
+    onWake: () -> Unit,
 ) {
     val idle = ui.busy == null
     val enrolled = pairing.drives.map { it.uuid }.toSet()
@@ -45,7 +56,7 @@ fun ServerTab(
     ) {
         item { Header("Server Hands") }
         item { StatusStrip(ui) }
-        item { ConnectionPanel(ui, pairing) }
+        item { ConnectionPanel(ui, pairing, idle, onWake, onForget) }
         ui.status?.let { s -> item { MachinePanel(s) } }
 
         item {
@@ -78,34 +89,45 @@ fun ServerTab(
             items(pools, key = { it.mountPoint }) { PoolItem(it) }
         }
 
-        item { SectionTitle("Paired server") }
-        item {
-            Panel {
-                Text("${pairing.host}:${pairing.port}", style = MaterialTheme.typography.titleSmall)
-                Text("Key fingerprint", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text(pairing.pin.fingerprint, fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall)
-                Text("This phone: ${pairing.deviceName}", style = MaterialTheme.typography.bodySmall)
-                Text("Saved passphrases: ${pairing.drives.joinToString { it.label }.ifEmpty { "none" }}", style = MaterialTheme.typography.bodySmall)
-                TextButton(onClick = onForget, enabled = idle) { Text("Forget this server") }
-            }
-        }
         item { Column(Modifier.padding(bottom = 16.dp)) {} }
     }
 }
 
+/** Server status; tap to show the pairing details and the forget button. */
 @Composable
-private fun ConnectionPanel(ui: UiState, pairing: PairingRecord) = Panel {
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        val tint = if (ui.connected == false) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
-        IconBadge(AppIcons.Server, tint, tint.copy(alpha = 0.12f))
-        Column(Modifier.weight(1f)) {
-            Text(ui.status?.hostname?.ifEmpty { null } ?: pairing.host, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            Text("${pairing.host}:${pairing.port}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+private fun ConnectionPanel(ui: UiState, pairing: PairingRecord, idle: Boolean, onWake: () -> Unit, onForget: () -> Unit) {
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    Panel(Modifier.clickable { expanded = !expanded }) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            val tint = if (ui.connected == false) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+            IconBadge(AppIcons.Server, tint, tint.copy(alpha = 0.12f))
+            Column(Modifier.weight(1f)) {
+                Text(ui.status?.hostname?.ifEmpty { null } ?: pairing.host, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                Text("${pairing.host}:${pairing.port}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            when (ui.connected) {
+                true -> Pill("Connected", MaterialTheme.colorScheme.primary)
+                false -> Pill("Offline", MaterialTheme.colorScheme.error)
+                null -> Pill(if (ui.busy != null) "Connecting" else "Not checked", MaterialTheme.colorScheme.outline)
+            }
         }
-        when (ui.connected) {
-            true -> Pill("Connected", MaterialTheme.colorScheme.primary)
-            false -> Pill("Offline", MaterialTheme.colorScheme.error)
-            null -> Pill(if (ui.busy != null) "Connecting" else "Not checked", MaterialTheme.colorScheme.outline)
+        if (ui.connected == false) {
+            FilledTonalButton(onClick = onWake, enabled = idle, modifier = Modifier.fillMaxWidth()) { Text("Wake (Wake-on-LAN)") }
+        }
+        AnimatedVisibility(expanded, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("Key fingerprint", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(pairing.pin.fingerprint, fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall)
+                Text("This phone: ${pairing.deviceName}", style = MaterialTheme.typography.bodySmall)
+                Text("Saved passphrases: ${pairing.drives.joinToString { it.label }.ifEmpty { "none" }}", style = MaterialTheme.typography.bodySmall)
+                pairing.mac?.let { Text("MAC address: $it", style = MaterialTheme.typography.bodySmall) }
+                Button(
+                    onClick = onForget,
+                    enabled = idle,
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError),
+                    modifier = Modifier.fillMaxWidth(),
+                ) { Text("Forget this server") }
+            }
         }
     }
 }

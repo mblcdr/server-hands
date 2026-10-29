@@ -4,6 +4,8 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -14,7 +16,8 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Surface
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -31,6 +34,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -42,6 +46,7 @@ import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import com.samsaz.serverhands.AppViewModel
 import com.samsaz.serverhands.UiState
+import com.samsaz.serverhands.net.WakeOnLan
 import dev.serverhands.protocol.DriveInfo
 import dev.serverhands.protocol.RequestView
 import dev.serverhands.protocol.ScriptView
@@ -53,6 +58,7 @@ fun HomeScreen(vm: AppViewModel, activity: FragmentActivity) {
     var enrolling by remember { mutableStateOf<RequestView?>(null) }
     var confirming by remember { mutableStateOf<ScriptView?>(null) }
     var tab by rememberSaveable { mutableIntStateOf(0) }
+    var askingMac by remember { mutableStateOf(false) }
 
     // Reconnect (or confirm the connection) and keep the server status fresh while the app is in the foreground.
     LifecycleResumeEffect(Unit) {
@@ -63,9 +69,19 @@ fun HomeScreen(vm: AppViewModel, activity: FragmentActivity) {
     val pairing = ui.pairing
     Scaffold(
         bottomBar = {
-            if (pairing != null) NavigationBar {
-                NavigationBarItem(selected = tab == 0, onClick = { tab = 0 }, icon = { Icon(AppIcons.Server, null) }, label = { Text("Server") })
-                NavigationBarItem(selected = tab == 1, onClick = { tab = 1 }, icon = { Icon(AppIcons.Terminal, null) }, label = { Text("Scripts") })
+            Column {
+                ui.busy?.let { label ->
+                    Surface(Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.secondaryContainer, contentColor = MaterialTheme.colorScheme.onSecondaryContainer) {
+                        Row(Modifier.padding(horizontal = 16.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+                            Text(label, style = MaterialTheme.typography.bodyMedium)
+                        }
+                    }
+                }
+                if (pairing != null) NavigationBar {
+                    NavigationBarItem(selected = tab == 0, onClick = { tab = 0 }, icon = { Icon(AppIcons.Server, null) }, label = { Text("Server") })
+                    NavigationBarItem(selected = tab == 1, onClick = { tab = 1 }, icon = { Icon(AppIcons.Terminal, null) }, label = { Text("Scripts") })
+                }
             }
         },
     ) { pad ->
@@ -82,6 +98,7 @@ fun HomeScreen(vm: AppViewModel, activity: FragmentActivity) {
                     onUnlock = { r -> vm.unlock(activity, r) },
                     onEnroll = { r -> enrolling = r },
                     onForget = vm::forget,
+                    onWake = { if (pairing.mac == null) askingMac = true else vm.wake() },
                 )
                 else -> ScriptsTab(
                     ui,
@@ -93,6 +110,10 @@ fun HomeScreen(vm: AppViewModel, activity: FragmentActivity) {
                 )
             }
         }
+    }
+
+    if (askingMac) {
+        MacDialog(onDismiss = { askingMac = false }, onSave = { askingMac = false; vm.wake(it) })
     }
 
     confirming?.let { s ->
@@ -136,10 +157,9 @@ fun HomeScreen(vm: AppViewModel, activity: FragmentActivity) {
 @Composable
 internal fun Header(title: String) = Text(title, style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(top = 16.dp))
 
-/** What is going on right now: progress, the pairing code, the last message. */
+/** What is going on right now: the pairing code and the last message. The running action is shown above the bottom bar. */
 @Composable
 internal fun StatusStrip(ui: UiState) = Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-    ui.busy?.let { Column { Text(it); LinearProgressIndicator(Modifier.fillMaxWidth()) } }
     ui.sas?.let { SasCard(it) }
     ui.message?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
 }
@@ -170,6 +190,23 @@ private fun PairCard(ui: UiState, vm: AppViewModel) {
             OutlinedButton(onClick = { vm.pair(pasted, deviceName); pasted = "" }, enabled = ui.busy == null && pasted.isNotBlank()) { Text("Pair") }
         }
     }
+}
+
+@Composable
+private fun MacDialog(onDismiss: () -> Unit, onSave: (String) -> Unit) {
+    var mac by rememberSaveable { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Server MAC address") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("Wake-on-LAN needs the MAC address of the server's network card. It is saved on this phone for next time. On the server: ip link", style = MaterialTheme.typography.bodySmall)
+                OutlinedTextField(mac, { mac = it }, label = { Text("aa:bb:cc:dd:ee:ff") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            }
+        },
+        confirmButton = { TextButton(onClick = { onSave(mac) }, enabled = WakeOnLan.normalize(mac) != null) { Text("Save and wake") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    )
 }
 
 /** Passphrases live in secure text fields and are turned into byte arrays that are wiped after use. */

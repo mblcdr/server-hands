@@ -20,10 +20,13 @@ class PairingRecord(
     val keyAlias: String,
     val deviceName: String,
     val drives: List<EnrolledDrive> = emptyList(),
+    /** The server's MAC address for Wake-on-LAN. Not secret. */
+    val mac: String? = null,
 ) {
     val pin: Pin get() = Pin(host, port, Codec.b64d(spki), Codec.b64d(sid))
     val serverPub: ByteArray get() = Codec.b64d(sid)
-    fun withDrives(d: List<EnrolledDrive>) = PairingRecord(host, port, spki, sid, keyAlias, deviceName, d)
+    fun withDrives(d: List<EnrolledDrive>) = PairingRecord(host, port, spki, sid, keyAlias, deviceName, d, mac)
+    fun withMac(m: String) = PairingRecord(host, port, spki, sid, keyAlias, deviceName, drives, m)
 
     companion object {
         fun aliasFor(serverPub: ByteArray) = "hands_device_" + Codec.sha256(serverPub).take(6).joinToString("") { "%02x".format(it) }
