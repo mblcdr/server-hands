@@ -10,7 +10,8 @@ struct MacSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("aa:bb:cc:dd:ee:ff", text: $mac)
+                    TextField("MAC address", text: $mac, prompt: Text("aa:bb:cc:dd:ee:ff"))
+                        .labelsHidden().multilineTextAlignment(.leading)
                         .autocorrectionDisabled()
                         #if os(iOS)
                         .textInputAutocapitalization(.never)
@@ -35,6 +36,61 @@ struct MacSheet: View {
         }
         .frame(minWidth: 360, minHeight: 240)
         .presentationDetents([.medium])
+    }
+}
+
+struct EditServerSheet: View {
+    let pairing: PairingRecord
+    let onSave: (String, String, String) -> String?
+    @Environment(\.dismiss) private var dismiss
+    @State private var host: String
+    @State private var port: String
+    @State private var mac: String
+    @State private var error: String?
+
+    init(pairing: PairingRecord, onSave: @escaping (String, String, String) -> String?) {
+        self.pairing = pairing; self.onSave = onSave
+        _host = State(initialValue: pairing.host)
+        _port = State(initialValue: String(pairing.port))
+        _mac = State(initialValue: pairing.mac ?? "")
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Address", text: $host, prompt: Text("Address")).labelsHidden().multilineTextAlignment(.leading).autocorrectionDisabled()
+                    TextField("Port", text: $port, prompt: Text("Port")).labelsHidden().multilineTextAlignment(.leading)
+                        #if os(iOS)
+                        .keyboardType(.numberPad)
+                        #endif
+                } header: {
+                    Text("Server")
+                } footer: {
+                    Text("The server is still verified by the key it was paired with.")
+                }
+                Section {
+                    TextField("MAC address", text: $mac, prompt: Text("aa:bb:cc:dd:ee:ff")).labelsHidden().multilineTextAlignment(.leading).autocorrectionDisabled()
+                } header: {
+                    Text("Wake-on-LAN MAC address")
+                } footer: {
+                    Text("Leave empty to remove it.")
+                }
+                if let error { Section { Text(error).foregroundStyle(.red) } }
+            }
+            .formStyle(.grouped)
+            .navigationTitle("Edit server")
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") { if let e = onSave(host, port, mac) { error = e } else { dismiss() } }
+                }
+            }
+        }
+        .frame(minWidth: 360, minHeight: 360)
     }
 }
 

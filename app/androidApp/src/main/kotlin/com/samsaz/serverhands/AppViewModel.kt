@@ -312,6 +312,22 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         _state.update { it.copy(requests = after.requests, scripts = scripts, message = null) }
     }
 
+    /**
+     * Saves a new address, port and Wake-on-LAN MAC (blank clears it). The pinned key is unchanged, so only the same server is accepted there.
+     * Returns an error text when the input is invalid, null when saved.
+     */
+    fun updateServer(host: String, port: String, mac: String): String? {
+        val h = host.trim()
+        if (h.isEmpty() || h.any { it.isWhitespace() } || '/' in h) return "Enter the server's address."
+        val p = port.trim().toIntOrNull()?.takeIf { it in 1..65535 } ?: return "The port must be between 1 and 65535."
+        val m = mac.trim().let { if (it.isEmpty()) null else WakeOnLan.normalize(it) ?: return "That is not a MAC address (like aa:bb:cc:dd:ee:ff)." }
+        val rec = _state.value.pairing?.withServer(h, p, m) ?: return null
+        try { store.save(rec) } catch (_: java.io.IOException) { return "Could not save the changes." }
+        _state.update { it.copy(pairing = rec, status = null, connected = null) }
+        refresh()
+        return null
+    }
+
     /** Broadcasts a Wake-on-LAN packet; a [newMac] is validated and saved first. */
     fun wake(newMac: String? = null) = op("Sending Wake-on-LAN packet...") {
         var p = _state.value.pairing ?: return@op

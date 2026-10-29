@@ -63,6 +63,7 @@ private struct ConnectionPanel: View {
     let onWake: () -> Void
     @State private var expanded = false
     @State private var confirmingForget = false
+    @State private var editing = false
 
     var body: some View {
         let tint: Color = model.connected == false ? .red : .accentColor
@@ -87,18 +88,23 @@ private struct ConnectionPanel: View {
             }
             if expanded {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Key fingerprint").font(.caption).foregroundStyle(.secondary)
+                    Text("Key fingerprint").font(.caption).foregroundStyle(.secondary).padding(.top, 8)
                     Text(pairing.fingerprintText).font(.footnote.monospaced()).textSelection(.enabled)
                     Text("This device: \(pairing.deviceName)").font(.footnote)
                     Text("Saved passphrases: \(pairing.drives.isEmpty ? "none" : pairing.drives.map(\.label).joined(separator: ", "))").font(.footnote)
                     if let mac = pairing.mac { Text("MAC address: \(mac)").font(.footnote) }
+                    Button { editing = true } label: { Text("Edit server details").frame(maxWidth: .infinity) }
+                        .buttonStyle(.bordered).disabled(!idle).padding(.top, 8)
                     Button(role: .destructive) { confirmingForget = true } label: { Text("Forget this server").frame(maxWidth: .infinity) }
-                        .buttonStyle(.borderedProminent).tint(.red).disabled(!idle)
+                        .buttonStyle(.borderedProminent).tint(.red).disabled(!idle).padding(.top, 2)
                 }
             }
         }
         .contentShape(Rectangle())
         .onTapGesture { withAnimation { expanded.toggle() } }
+        .sheet(isPresented: $editing) {
+            EditServerSheet(pairing: pairing) { model.updateServer(host: $0, port: $1, mac: $2) }
+        }
         .confirmationDialog("Forget this server?", isPresented: $confirmingForget, titleVisibility: .visible) {
             Button("Forget", role: .destructive) { model.forget() }
         } message: {

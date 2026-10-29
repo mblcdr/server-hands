@@ -26,7 +26,8 @@ class PairingRecord(
     val pin: Pin get() = Pin(host, port, Codec.b64d(spki), Codec.b64d(sid))
     val serverPub: ByteArray get() = Codec.b64d(sid)
     fun withDrives(d: List<EnrolledDrive>) = PairingRecord(host, port, spki, sid, keyAlias, deviceName, d, mac)
-    fun withMac(m: String) = PairingRecord(host, port, spki, sid, keyAlias, deviceName, drives, m)
+    fun withMac(m: String?) = PairingRecord(host, port, spki, sid, keyAlias, deviceName, drives, m)
+    fun withServer(host: String, port: Int, mac: String?) = PairingRecord(host, port, spki, sid, keyAlias, deviceName, drives, mac)
 
     companion object {
         fun aliasFor(serverPub: ByteArray) = "hands_device_" + Codec.sha256(serverPub).take(6).joinToString("") { "%02x".format(it) }

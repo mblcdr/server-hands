@@ -9,8 +9,8 @@ public struct EnrolledDrive: Codable, Hashable, Sendable {
 
 /// Public data about the one paired server. Nothing secret: keys live in the Keychain / Secure Enclave, passphrases in the vault.
 public struct PairingRecord: Codable, Hashable, Sendable {
-    public let host: String
-    public let port: Int
+    public var host: String
+    public var port: Int
     public let spki: String
     public let sid: String
     public let keyAlias: String

@@ -350,6 +350,29 @@ final class AppModel: ObservableObject {
         }
     }
 
+    // MARK: Server details
+
+    /// Saves a new address, port and Wake-on-LAN MAC (empty clears it). The pinned key is unchanged, so only the same server is accepted there.
+    /// Returns an error text when the input is invalid.
+    func updateServer(host: String, port: String, mac: String) -> String? {
+        let host = host.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !host.isEmpty, !host.contains(where: \.isWhitespace), !host.contains("/") else { return "Enter the server's address." }
+        guard let port = Int(port.trimmingCharacters(in: .whitespaces)), (1...65535).contains(port) else { return "The port must be between 1 and 65535." }
+        let macText = mac.trimmingCharacters(in: .whitespaces)
+        var newMac: String?
+        if !macText.isEmpty {
+            guard let m = WakeOnLan.normalize(macText) else { return "That is not a MAC address (like aa:bb:cc:dd:ee:ff)." }
+            newMac = m
+        }
+        guard var p = pairing else { return nil }
+        p.host = host; p.port = port; p.mac = newMac
+        do { try requireStore().save(p) } catch { return "Could not save the changes." }
+        pairing = p
+        status = nil; connected = nil
+        refresh()
+        return nil
+    }
+
     // MARK: Wake-on-LAN
 
     /// Broadcasts a Wake-on-LAN packet; a `newMac` is validated and saved first.

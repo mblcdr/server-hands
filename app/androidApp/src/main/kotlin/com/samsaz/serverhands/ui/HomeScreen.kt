@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material3.AlertDialog
@@ -44,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
@@ -54,6 +56,7 @@ import com.journeyapps.barcodescanner.ScanOptions
 import com.samsaz.serverhands.AppViewModel
 import com.samsaz.serverhands.UiState
 import com.samsaz.serverhands.net.WakeOnLan
+import com.samsaz.serverhands.vault.PairingRecord
 import dev.serverhands.protocol.DriveInfo
 import dev.serverhands.protocol.RequestView
 import dev.serverhands.protocol.ScriptView
@@ -66,6 +69,7 @@ fun HomeScreen(vm: AppViewModel, activity: FragmentActivity) {
     var confirming by remember { mutableStateOf<ScriptView?>(null) }
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var askingMac by remember { mutableStateOf(false) }
+    var editing by remember { mutableStateOf(false) }
 
     // Reconnect (or confirm the connection) and keep the server status fresh while the app is in the foreground.
     LifecycleResumeEffect(Unit) {
@@ -100,6 +104,7 @@ fun HomeScreen(vm: AppViewModel, activity: FragmentActivity) {
                     onUnlock = { r -> vm.unlock(activity, r) },
                     onEnroll = { r -> enrolling = r },
                     onForget = vm::forget,
+                    onEdit = { editing = true },
                     onWake = { if (pairing.mac == null) askingMac = true else vm.wake() },
                 )
                 else -> ScriptsTab(
@@ -121,6 +126,10 @@ fun HomeScreen(vm: AppViewModel, activity: FragmentActivity) {
 
     if (askingMac) {
         MacDialog(onDismiss = { askingMac = false }, onSave = { askingMac = false; vm.wake(it) })
+    }
+
+    if (editing) ui.pairing?.let { p ->
+        EditServerDialog(p, onDismiss = { editing = false }, onSave = { h, port, mac -> vm.updateServer(h, port, mac).also { if (it == null) editing = false } })
     }
 
     confirming?.let { s ->
@@ -212,6 +221,29 @@ private fun MacDialog(onDismiss: () -> Unit, onSave: (String) -> Unit) {
             }
         },
         confirmButton = { TextButton(onClick = { onSave(mac) }, enabled = WakeOnLan.normalize(mac) != null) { Text("Save and wake") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
+    )
+}
+
+@Composable
+private fun EditServerDialog(pairing: PairingRecord, onDismiss: () -> Unit, onSave: (String, String, String) -> String?) {
+    var host by rememberSaveable { mutableStateOf(pairing.host) }
+    var port by rememberSaveable { mutableStateOf(pairing.port.toString()) }
+    var mac by rememberSaveable { mutableStateOf(pairing.mac.orEmpty()) }
+    var error by rememberSaveable { mutableStateOf<String?>(null) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit server") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("The server is still verified by the key it was paired with.", style = MaterialTheme.typography.bodySmall)
+                OutlinedTextField(host, { host = it }, label = { Text("Address") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(port, { port = it }, label = { Text("Port") }, singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(mac, { mac = it }, label = { Text("Wake-on-LAN MAC (aa:bb:cc:dd:ee:ff)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                error?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
+            }
+        },
+        confirmButton = { TextButton(onClick = { error = onSave(host, port, mac) }) { Text("Save") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("Cancel") } },
     )
 }

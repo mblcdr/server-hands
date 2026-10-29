@@ -49,6 +49,7 @@ fun ServerTab(
     onEnroll: (RequestView) -> Unit,
     onForget: () -> Unit,
     onWake: () -> Unit,
+    onEdit: () -> Unit,
 ) {
     val idle = ui.busy == null
     val enrolled = pairing.drives.map { it.uuid }.toSet()
@@ -58,7 +59,7 @@ fun ServerTab(
     ) {
         item { Header("Server Hands") }
         item { StatusStrip(ui) }
-        item { ConnectionPanel(ui, pairing, idle, onWake, onForget) }
+        item { ConnectionPanel(ui, pairing, idle, onWake, onEdit, onForget) }
         ui.status?.let { s -> item { MachinePanel(s) } }
 
         // Only while connected, and only when something is waiting or a drive is still locked.
@@ -103,7 +104,7 @@ fun ServerTab(
 
 /** Server status; tap to show the pairing details and the forget button. */
 @Composable
-private fun ConnectionPanel(ui: UiState, pairing: PairingRecord, idle: Boolean, onWake: () -> Unit, onForget: () -> Unit) {
+private fun ConnectionPanel(ui: UiState, pairing: PairingRecord, idle: Boolean, onWake: () -> Unit, onEdit: () -> Unit, onForget: () -> Unit) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     Panel(Modifier.clickable { expanded = !expanded }) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -124,16 +125,17 @@ private fun ConnectionPanel(ui: UiState, pairing: PairingRecord, idle: Boolean, 
         }
         AnimatedVisibility(expanded, enter = expandVertically() + fadeIn(), exit = shrinkVertically() + fadeOut()) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text("Key fingerprint", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Key fingerprint", modifier = Modifier.padding(top = 8.dp), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(pairing.pin.fingerprint, fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall)
                 Text("This phone: ${pairing.deviceName}", style = MaterialTheme.typography.bodySmall)
                 Text("Saved passphrases: ${pairing.drives.joinToString { it.label }.ifEmpty { "none" }}", style = MaterialTheme.typography.bodySmall)
                 pairing.mac?.let { Text("MAC address: $it", style = MaterialTheme.typography.bodySmall) }
+                OutlinedButton(onClick = onEdit, enabled = idle, modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) { Text("Edit server details") }
                 Button(
                     onClick = onForget,
                     enabled = idle,
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error, contentColor = MaterialTheme.colorScheme.onError),
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
                 ) { Text("Forget this server") }
             }
         }
